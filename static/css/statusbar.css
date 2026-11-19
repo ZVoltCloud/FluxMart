@@ -1,0 +1,76 @@
+/* ═══════════════════ STATUS BAR ═══════════════════ */
+
+.status-bar {
+  position: fixed;
+  bottom: 0;
+  left: var(--sidebar-width);
+  right: 0;
+  height: var(--statusbar-height);
+  background: var(--sidebar-bg);
+  border-top: 1px solid transparent;
+  border-image: var(--metallic-gradient) 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  z-index: 150;
+  transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  -webkit-app-region: no-drag;
+}
+
+.sidebar.collapsed ~ .main-content .status-bar,
+body.sidebar-collapsed .status-bar {
+  left: var(--sidebar-collapsed);
+}
+
+.status-bar-left,
+.status-bar-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: "Poppins", sans-serif;
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 0.2px;
+}
+
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.status-dot.online {
+  background: var(--success);
+  box-shadow: 0 0 6px rgba(76, 175, 80, 0.4);
+}
+
+.status-dot.offline {
+  background: var(--error);
+  box-shadow: 0 0 6px rgba(244, 67, 54, 0.4);
+}
+
+.status-dot.warning {
+  background: var(--warning);
+  box-shadow: 0 0 6px rgba(255, 193, 7, 0.4);
+}
+
+.status-divider {
+  width: 1px;
+  height: 14px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.status-version {
+  font-size: 10px;
+  color: var(--text-muted);
+  opacity: 0.7;
+  letter-spacing: 0.3px;
+}

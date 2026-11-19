@@ -1,0 +1,89 @@
+.progress-container {
+  margin-bottom: 20px;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 5px;
+}
+
+.progress {
+  height: 100%;
+  background: var(--metallic-gradient);
+  border-radius: 3px;
+  transition: width var(--transition-speed) ease;
+  box-shadow: 0 0 8px var(--glow);
+}
+
+.progress-text {
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-light);
+  height: 20px;
+  line-height: 20px;
+  margin-top: 5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.stats {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  transition: transform var(--transition-speed);
+}
+
+.stat-value {
+  font-size: 24px;
+  font-weight: 600;
+  /* Default: metallic gradient for neutral stats */
+  background: var(--metallic-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Colored stat values — override gradient fill so actual color shows.
+   Use .stat-value.success-text etc. for higher specificity than others.css */
+.stat-value.success-text {
+  background: none;
+  -webkit-background-clip: unset;
+  -webkit-text-fill-color: var(--success);
+  background-clip: unset;
+  color: var(--success);
+}
+
+.stat-value.error-text {
+  background: none;
+  -webkit-background-clip: unset;
+  -webkit-text-fill-color: var(--error);
+  background-clip: unset;
+  color: var(--error);
+}
+
+.stat-value.warning-text {
+  background: none;
+  -webkit-background-clip: unset;
+  -webkit-text-fill-color: var(--warning);
+  background-clip: unset;
+  color: var(--warning);
+  /* Override font-size from others.css .warning-text */
+  font-size: 24px;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  letter-spacing: 0.2px;
+}

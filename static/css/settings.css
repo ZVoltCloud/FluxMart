@@ -1,0 +1,356 @@
+/* ═══════════════════ SETTINGS PAGE ═══════════════════
+   Refined glass-morph style — matches account.css / loading-screen.css
+   ──────────────────────────────────────────────────── */
+
+.settings-container {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 4px 0 24px;
+}
+
+/* ── Section card ──────────────────────────────────── */
+.settings-section {
+  background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.012) 100%);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 14px;
+  padding: 20px 22px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.25s ease, background-color 0.25s ease;
+}
+
+.settings-section::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 60% 80% at 0% 0%, rgba(192,192,192,0.035) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.settings-section:hover {
+  border-color: rgba(255,255,255,0.12);
+  background: linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.018) 100%);
+}
+
+.settings-section h2 {
+  font-family: "Poppins", sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  /* Use metallic gradient like the rest of the app */
+  background: var(--metallic-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  margin: 0 0 16px 0;
+  text-align: left;
+  position: relative;
+  padding-left: 12px;
+}
+
+.settings-section h2::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 14px;
+  border-radius: 2px;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.7), rgba(255,255,255,0.15));
+}
+
+/* ── Setting row ──────────────────────────────────── */
+.setting-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  position: relative;
+}
+
+.setting-item.vertical {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.setting-item.vertical .setting-control {
+  width: 100%;
+  min-width: 100%;
+  justify-content: flex-start;
+}
+
+.setting-item.vertical .setting-label span:first-child {
+  font-size: 13px;
+  color: rgba(255,255,255,0.85);
+  font-weight: 500;
+}
+
+.setting-item:last-child {
+  border-bottom: none;
+}
+
+.setting-label {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 3px;
+  min-width: 0;
+}
+
+.setting-label span:first-child {
+  font-family: "Poppins", sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.85);
+  letter-spacing: 0.2px;
+}
+
+.setting-description {
+  font-family: "Poppins", sans-serif;
+  font-size: 11.5px;
+  color: rgba(255,255,255,0.4);
+  letter-spacing: 0.1px;
+  line-height: 1.45;
+}
+
+.setting-control {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* Apply 220px width only to specific inputs/selects in the Settings tab and other menus */
+.setting-control:not(:has(.toggle)) {
+  width: 220px;
+  min-width: 220px;
+}
+
+.setting-control .input-wrapper {
+  width: 100%;
+}
+
+.setting-control input:not([type="checkbox"]),
+.setting-control select {
+  width: 100%;
+}
+
+/* ── Toggle switch ────────────────────────────────── */
+.toggle {
+  position: relative;
+  display: inline-block;
+  width: 42px;
+  height: 22px;
+  flex-shrink: 0;
+}
+
+.toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.1);
+  transition: background-color 0.25s ease, border-color 0.25s ease;
+  border-radius: 22px;
+}
+
+.toggle:hover .toggle-slider {
+  background: rgba(255,255,255,0.13);
+  border-color: rgba(255,255,255,0.18);
+}
+
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 14px;
+  width: 14px;
+  left: 3px;
+  bottom: 3px;
+  background-color: rgba(255,255,255,0.9);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.25s ease;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.35);
+}
+
+input:checked + .toggle-slider {
+  background: rgba(255,255,255,0.85);
+  border-color: rgba(255,255,255,0.9);
+}
+
+.toggle:hover input:checked + .toggle-slider {
+  background: rgba(255,255,255,0.95);
+}
+
+input:checked + .toggle-slider:before {
+  transform: translateX(20px);
+  background-color: #111;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Account section toggle — keep clean, no extra glow on click */
+#account-tab .toggle:active .toggle-slider,
+.toggle:active .toggle-slider {
+  box-shadow: none !important;
+}
+
+/* ── Provider box ────────────────────────────────── */
+.provider-box {
+  background: rgba(255,255,255,0.025);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 12px;
+  padding: 16px 18px;
+  transition: background-color 0.25s ease, border-color 0.25s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.provider-box:hover {
+  background: rgba(255,255,255,0.04);
+  border-color: rgba(255,255,255,0.14);
+}
+
+.provider-box.active {
+  background: rgba(255,255,255,0.05);
+  border-color: rgba(255,255,255,0.28);
+}
+
+.provider-box.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.9), rgba(255,255,255,0.25));
+}
+
+.provider-box.active:hover {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.35);
+}
+
+/* Account section provider box exclusion */
+#account-tab .provider-box:active {
+  box-shadow: none !important;
+}
+
+/* ── Subtle action button (replaces gradient mailcow-check-btn) ── */
+.mailcow-check-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 16px;
+  background: rgba(255,255,255,0.05);
+  color: rgba(255,255,255,0.8);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  white-space: nowrap;
+}
+
+.mailcow-check-btn:hover:not(:disabled) {
+  background: rgba(255,255,255,0.09);
+  border-color: rgba(255,255,255,0.22);
+  color: #fff;
+}
+
+.mailcow-check-btn:active:not(:disabled) {
+  background: rgba(255,255,255,0.07);
+}
+
+#account-tab .mailcow-check-btn:active:not(:disabled) {
+  box-shadow: none !important;
+}
+
+.mailcow-check-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.mailcow-check-icon {
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.mailcow-check-status {
+  font-size: 11.5px;
+  color: rgba(255,255,255,0.45);
+  transition: color 0.25s ease;
+  letter-spacing: 0.1px;
+}
+
+.mailcow-check-status.success {
+  color: var(--success);
+}
+
+.mailcow-check-status.error {
+  color: var(--error);
+}
+
+/* ── Inputs / selects inside settings ───────────── */
+.setting-control input[type="text"],
+.setting-control input[type="password"],
+.setting-control input[type="number"],
+.setting-control select,
+.provider-box input[type="text"],
+.provider-box input[type="password"],
+.provider-box input[type="number"],
+.provider-box select {
+  background-color: rgba(0,0,0,0.35);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px;
+  padding: 8px 11px;
+  color: rgba(255,255,255,0.9);
+  font-family: inherit;
+  font-size: 12.5px;
+  letter-spacing: 0.1px;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+  outline: none;
+}
+
+.setting-control select,
+.provider-box select {
+  padding-right: 36px;
+}
+
+.setting-control input:hover,
+.setting-control select:hover,
+.provider-box input:hover,
+.provider-box select:hover {
+  border-color: rgba(255,255,255,0.18);
+}
+
+.setting-control input:focus,
+.setting-control select:focus,
+.provider-box input:focus,
+.provider-box select:focus {
+  border-color: rgba(255,255,255,0.32);
+  background-color: rgba(0,0,0,0.45);
+}
+
+.setting-control input::placeholder,
+.provider-box input::placeholder {
+  color: rgba(255,255,255,0.22);
+}

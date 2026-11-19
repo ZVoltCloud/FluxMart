@@ -1,0 +1,73 @@
+:root {
+  /* ── Brand accent — fine silver metallic ── */
+  --primary:       #C0C0C0;
+  --primary-light: #E8E8E8;
+  --primary-dark:  #888888;
+  --secondary:     #a0a0a0;
+
+  /* Metallic gradient used for headings and borders */
+  --metallic-gradient: linear-gradient(
+    120deg,
+    #4a4a4a 0%,
+    #b8b8b8 25%,
+    #f0f0f0 48%,
+    #909090 68%,
+    #d8d8d8 85%,
+    #505050 100%
+  );
+
+  /* ── Surface colors ── */
+  --background:   #000000;
+  --bg:           #000000;
+  --sidebar-bg:   #080808;
+  --card-bg:      #111111;
+  --surface-2:    #161616;
+  --surface-3:    #1e1e1e;
+
+  --scrollbar-size:         12px;
+  --scrollbar-track:        #111111;
+  --scrollbar-thumb:        #666666;
+  --scrollbar-thumb-hover:  #888888;
+  --scrollbar-thumb-active: #b8b8b8;
+
+  /* ── Text hierarchy ── */
+  --text:           #f0f0f0;
+  --text-light:     #b8b8b8;
+  --text-secondary: #808080;
+  --text-muted:     #4a4a4a;
+
+  /* ── Borders / lines ── */
+  --border:         rgba(255, 255, 255, 0.09);
+  --border-subtle:  rgba(255, 255, 255, 0.05);
+  --border-strong:  rgba(255, 255, 255, 0.18);
+
+  /* ── Input fields ── */
+  --input-bg:     #0d0d0d;
+  --input-border: rgba(255, 255, 255, 0.1);
+
+  /* ── Status colors ── */
+  --success:  #4caf50;
+  --warning:  #ff9800;
+  --error:    #f44336;
+  --info:     #80b0d0;
+
+  /* ── Glow / shadow ── */
+  --shadow:   rgba(0, 0, 0, 0.8);
+  --glow:     rgba(200, 200, 200, 0.15);
+
+  /* ── Timing ── */
+  --transition-speed: 0.25s;
+  --transition-ease:  cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* ── Layout ── */
+  --sidebar-width:     220px;
+  --sidebar-collapsed: 60px;
+  --statusbar-height:  30px;
+  --header-height:     46px;
+
+  /* ── Radius scale ── */
+  --radius-sm:  6px;
+  --radius-md:  10px;
+  --radius-lg:  14px;
+  --radius-xl:  20px;
+}

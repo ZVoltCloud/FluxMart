@@ -1,0 +1,15 @@
+@"
+
+# Secrets and private configuration
+.env
+.env.*
+!.env.example
+data/config.json
+data/config.json.corrupted
+data/output/tokens.txt
+data/temp/discord_login.html
+
+# Python cache
+__pycache__/
+*.pyc
+"@ | Add-Content .gitignore

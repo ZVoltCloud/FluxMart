@@ -1,0 +1,418 @@
+/* ═══════════════════ FORMS — base inputs, buttons, drag-drop
+   Glass-morph style — matches account.css / settings.css
+   ──────────────────────────────────────────────────── */
+
+/* ── Drag & drop area ──────────────────────────────── */
+.drag-drop-area {
+  border: 1.5px dashed rgba(255,255,255,0.12);
+  border-radius: 12px;
+  padding: 16px 14px;
+  margin-bottom: 12px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+  position: relative;
+  overflow: hidden;
+  background: rgba(255,255,255,0.02);
+}
+
+.drag-drop-area:hover,
+.drag-drop-area.drag-over {
+  border-color: rgba(255,255,255,0.35);
+  background: rgba(255,255,255,0.045);
+}
+
+.drag-drop-area::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.drag-drop-area:hover::after,
+.drag-drop-area.drag-over::after {
+  opacity: 1;
+}
+
+.drag-drop-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.upload-icon {
+  font-size: 22px;
+  color: rgba(255,255,255,0.5);
+}
+
+.file-input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.file-info {
+  text-align: center;
+  font-size: 12px;
+  color: rgba(255,255,255,0.4);
+  margin-top: 8px;
+  letter-spacing: 0.1px;
+}
+
+input, select, textarea, button, .toggle, .password-toggle-icon {
+  -webkit-app-region: no-drag;
+}
+
+.input-group {
+    margin-bottom: 14px;
+    position: relative;
+}
+
+.input-wrapper {
+    position: relative;
+}
+
+.password-toggle-icon {
+    position: absolute;
+    top: 50%;
+    right: 14px;
+    transform: translateY(-50%);
+    cursor: pointer;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease, color 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    color: rgba(255,255,255,0.4);
+}
+
+.password-toggle-icon:hover {
+    color: rgba(255,255,255,0.75);
+}
+
+.password-toggle-icon.visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.password-toggle-icon svg {
+    width: 16px;
+    height: 16px;
+}
+
+.eye-open {
+    display: none;
+}
+
+label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.45);
+  letter-spacing: 0.2px;
+}
+
+/* ── Inputs / selects / textareas ─────────────────── */
+input:not([type="checkbox"]):not([type="radio"]),
+select {
+  width: 100%;
+  padding: 9px 13px;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 9px;
+  font-family: "Poppins", sans-serif;
+  font-size: 13px;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+  background: rgba(0,0,0,0.35);
+  color: rgba(255,255,255,0.9);
+  appearance: none;
+  -webkit-appearance: none;
+  letter-spacing: 0.1px;
+}
+
+/* Remove spinners from number inputs */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+select {
+  cursor: pointer;
+  color-scheme: dark;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23999999' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 36px;
+}
+
+select option,
+select optgroup {
+  background-color: var(--card-bg);
+  color: var(--text);
+}
+
+select option:checked {
+  background-color: var(--surface-3);
+  color: var(--primary-light);
+}
+
+select:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Modern WebView2 can theme the popup without replacing native select behavior. */
+@supports (appearance: base-select) {
+  select:not([multiple]):not([size]),
+  select:not([multiple]):not([size])::picker(select) {
+    appearance: base-select;
+  }
+
+  select:not([multiple]):not([size]) {
+    background-image: none;
+    padding-right: 12px;
+    align-items: center;
+    gap: 10px;
+  }
+
+  select::picker(select) {
+    box-sizing: border-box;
+    width: anchor-size(width);
+    min-width: 0;
+    margin-block: 6px;
+    padding: 5px;
+    border: 1px solid var(--border-strong);
+    border-radius: 10px;
+    background: linear-gradient(145deg, #1b1b1b, #0d0d0d);
+    color: var(--text);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.65);
+    font-family: "Poppins", sans-serif;
+    font-size: 12.5px;
+    max-height: min(320px, 60vh);
+    max-width: calc(100vw - 24px);
+    overflow-y: auto;
+  }
+
+  select::picker-icon {
+    color: var(--primary-dark);
+    transition: transform 0.2s ease;
+  }
+
+  select:open::picker-icon {
+    transform: rotate(180deg);
+  }
+
+  select:not([multiple]):not([size]) option {
+    min-width: 0;
+    min-height: 36px;
+    padding: 9px 11px;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-light);
+    cursor: pointer;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  select:not([multiple]):not([size]) option:checked {
+    background: var(--surface-3);
+    color: var(--primary-light);
+    font-weight: 500;
+  }
+
+  select:not([multiple]):not([size]) option:hover,
+  select:not([multiple]):not([size]) option:focus {
+    background: #303030;
+    color: #ffffff;
+  }
+
+  select option::checkmark {
+    color: var(--primary);
+  }
+
+  select:not([multiple]):not([size]) option:disabled {
+    color: var(--text-secondary);
+    background: transparent;
+    cursor: not-allowed;
+  }
+}
+
+textarea {
+  width: 100%;
+  padding: 11px 13px;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 9px;
+  font-family: "Poppins", sans-serif;
+  font-size: 13px;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+  background: rgba(0,0,0,0.35);
+  color: rgba(255,255,255,0.9);
+  min-height: 100px;
+  resize: vertical;
+  letter-spacing: 0.1px;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: rgba(255,255,255,0.22);
+}
+
+/* Subtle hover (no big glow) */
+input:not([type="checkbox"]):not([type="radio"]):hover,
+select:hover,
+textarea:hover {
+  border-color: rgba(255,255,255,0.18) !important;
+  box-shadow: none !important;
+}
+
+/* Focus — gentle white border, no big aura */
+input:not([type="checkbox"]):not([type="radio"]):focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: rgba(255,255,255,0.32) !important;
+  background-color: rgba(0,0,0,0.45);
+  box-shadow: none !important;
+}
+
+/* Account section keeps its own quiet style — preserved */
+#account-tab input:focus,
+#account-tab select:focus,
+#account-tab textarea:focus,
+#account-tab input:active,
+#account-tab select:active,
+#account-tab textarea:active {
+  border-color: rgba(255,255,255,0.08) !important;
+  box-shadow: none !important;
+}
+
+#account-tab input:hover,
+#account-tab select:hover,
+#account-tab textarea:hover {
+  border-color: rgba(255,255,255,0.18) !important;
+  box-shadow: none !important;
+}
+
+input[type="password"]::-ms-reveal,
+input[type="password"]::-webkit-password-reveal-button {
+    display: none;
+}
+
+
+
+
+/* ── Primary button — silver, refined ─────────────── */
+.primary-btn {
+  background: linear-gradient(135deg, rgba(255,255,255,0.92), rgba(192,192,192,0.78));
+  color: #0d0d0d;
+  border: 1px solid rgba(255,255,255,0.4);
+  border-radius: 10px;
+  padding: 9px 20px;
+  font-family: "Poppins", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 0.2s ease, border-color 0.2s ease;
+  position: relative;
+  overflow: hidden;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+
+.primary-btn:hover:not(:disabled) {
+  filter: brightness(1.08);
+  border-color: rgba(255,255,255,0.6);
+}
+
+.primary-btn:active:not(:disabled) {
+  filter: brightness(0.96);
+}
+
+#account-tab .primary-btn:active:not(:disabled) {
+  box-shadow: none !important;
+}
+
+.primary-btn:disabled {
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.3);
+  border-color: rgba(255,255,255,0.07);
+  cursor: default;
+  filter: none;
+  pointer-events: none;
+}
+
+/* ── Secondary button — ghost glass ───────────────── */
+.secondary-btn {
+  background: rgba(255,255,255,0.04);
+  color: rgba(255,255,255,0.8);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 10px;
+  padding: 9px 16px;
+  font-family: "Poppins", sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  letter-spacing: 0.2px;
+}
+
+.secondary-btn:hover:not(:disabled) {
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(255,255,255,0.22);
+  color: #fff;
+}
+
+.secondary-btn:active:not(:disabled) {
+  background: rgba(255,255,255,0.06);
+}
+
+#account-tab .secondary-btn:active:not(:disabled) {
+  box-shadow: none !important;
+}
+
+.secondary-btn:disabled {
+  color: rgba(255,255,255,0.3);
+  border-color: rgba(255,255,255,0.06);
+  background: rgba(255,255,255,0.02);
+  cursor: default;
+  pointer-events: none;
+}
+
+.primary-btn::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.5);
+  opacity: 0;
+  border-radius: 100%;
+  transform: scale(1, 1) translate(-50%);
+  transform-origin: 50% 50%;
+}
+
+.primary-btn:focus:not(:active)::after {
+  animation: ripple 1s ease-out;
+}

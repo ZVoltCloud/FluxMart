@@ -1,0 +1,31 @@
+# FluxMart Auto-Update Server
+# Apache rewrite rules for clean API URLs
+
+RewriteEngine On
+
+# /api/version -> api/version.php
+RewriteRule ^api/version/?$ api/version.php [L,QSA]
+
+# /api/download -> api/download.php
+RewriteRule ^api/download/?$ api/download.php [L,QSA]
+
+# Prevent directory listing
+Options -Indexes
+
+# Block access to sensitive files
+<FilesMatch "\.(json|lock|log)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order deny,allow
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# Allow version.php and download.php to serve JSON
+<FilesMatch "\.php$">
+    <IfModule mod_authz_core.c>
+        Require all granted
+    </IfModule>
+</FilesMatch>

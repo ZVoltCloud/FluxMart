@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FluxMart — Update Admin</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',sans-serif;background:#000;color:#f0f0f0;min-height:100vh;display:flex;align-items:center;justify-content:center}
+.container{width:100%;max-width:460px;padding:20px}
+h1{font-size:20px;font-weight:600;color:#c0c0c0;margin-bottom:4px;text-align:center}
+.subtitle{font-size:12px;color:#555;text-align:center;margin-bottom:28px}
+.card{background:#0a0a0a;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:24px;margin-bottom:16px}
+.card h2{font-size:14px;color:#aaa;margin-bottom:16px;font-weight:500}
+label{display:block;font-size:11px;color:#666;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
+input[type=text],input[type=password]{width:100%;padding:10px 12px;background:#111;border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#f0f0f0;font-size:13px;font-family:inherit;outline:none;margin-bottom:14px;transition:border .2s}
+input:focus{border-color:rgba(192,192,192,.4)}
+.btn{padding:10px 24px;border:none;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;font-family:inherit;width:100%}
+.btn-primary{background:#c0c0c0;color:#000}.btn-primary:hover{background:#d4d4d4}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.status-box{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:14px;margin-bottom:16px}
+.status-row{display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px}
+.status-row:last-child{margin-bottom:0}
+.status-label{color:#666}
+.status-value{color:#c0c0c0;font-weight:500}
+.status-value.green{color:#4caf50}
+.file-input-wrap{position:relative;margin-bottom:14px}
+.file-input-wrap input[type=file]{display:none}
+.file-drop{border:2px dashed rgba(255,255,255,.1);border-radius:8px;padding:24px;text-align:center;cursor:pointer;transition:border-color .2s}
+.file-drop:hover,.file-drop.dragover{border-color:rgba(192,192,192,.4)}
+.file-drop-text{font-size:13px;color:#666}
+.file-drop-name{font-size:12px;color:#4caf50;margin-top:6px;display:none}
+.msg{font-size:12px;margin-top:10px;text-align:center;min-height:18px}
+.msg.ok{color:#4caf50}
+.msg.err{color:#f44336}
+.progress-track{height:6px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;margin-top:10px;display:none}
+.progress-fill{height:100%;background:linear-gradient(90deg,#909090,#c0c0c0);border-radius:3px;width:0;transition:width .3s}
+#login-panel,#admin-panel{display:none}
+#login-panel.active,#admin-panel.active{display:block}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>FluxMart</h1>
+  <div class="subtitle">Update Server Admin Panel</div>
+
+  <!-- Login -->
+  <div id="login-panel" class="active">
+    <div class="card">
+      <h2>Admin Login</h2>
+      <label>Password</label>
+      <input type="password" id="login-pwd" placeholder="Enter admin password" autocomplete="off">
+      <button class="btn btn-primary" id="login-btn" onclick="doLogin()">Login</button>
+      <div class="msg" id="login-msg"></div>
+    </div>
+  </div>
+
+  <!-- Admin -->
+  <div id="admin-panel">
+    <div class="card">
+      <h2>Current Status</h2>
+      <div class="status-box" id="status-box">
+        <div class="status-row"><span class="status-label">Version</span><span class="status-value" id="s-ver">—</span></div>
+        <div class="status-row"><span class="status-label">SHA256</span><span class="status-value" id="s-hash" style="font-size:10px;word-break:break-all">—</span></div>
+        <div class="status-row"><span class="status-label">Size</span><span class="status-value" id="s-size">—</span></div>
+        <div class="status-row"><span class="status-label">Uploaded</span><span class="status-value" id="s-date">—</span></div>
+        <div class="status-row"><span class="status-label">ZIP Ready</span><span class="status-value" id="s-zip">—</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Upload New Update</h2>
+      <label>New Version</label>
+      <input type="text" id="up-ver" placeholder="e.g. 3.3.4">
+      <label>Update ZIP</label>
+      <div class="file-input-wrap">
+        <div class="file-drop" id="file-drop" onclick="document.getElementById('file-input').click()">
+          <div class="file-drop-text">Click or drag ZIP file here</div>
+          <div class="file-drop-name" id="file-name"></div>
+        </div>
+        <input type="file" id="file-input" accept=".zip" onchange="onFileSelect(this)">
+      </div>
+      <button class="btn btn-primary" id="upload-btn" onclick="doUpload()">Upload Update</button>
+      <div class="progress-track" id="prog-track"><div class="progress-fill" id="prog-fill"></div></div>
+      <div class="msg" id="upload-msg"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+var selectedFile = null;
+
+// Drag and drop
+var drop = document.getElementById('file-drop');
+drop.addEventListener('dragover', function(e) { e.preventDefault(); drop.classList.add('dragover'); });
+drop.addEventListener('dragleave', function() { drop.classList.remove('dragover'); });
+drop.addEventListener('drop', function(e) {
+  e.preventDefault(); drop.classList.remove('dragover');
+  if (e.dataTransfer.files.length) { selectedFile = e.dataTransfer.files[0]; showFileName(); }
+});
+
+function onFileSelect(input) {
+  if (input.files.length) { selectedFile = input.files[0]; showFileName(); }
+}
+
+function showFileName() {
+  var el = document.getElementById('file-name');
+  el.textContent = selectedFile.name + ' (' + (selectedFile.size/1024/1024).toFixed(1) + ' MB)';
+  el.style.display = 'block';
+}
+
+function setMsg(id, text, type) {
+  var el = document.getElementById(id);
+  el.textContent = text;
+  el.className = 'msg ' + (type || '');
+}
+
+async function doLogin() {
+  var pwd = document.getElementById('login-pwd').value;
+  if (!pwd) { setMsg('login-msg', 'Enter password', 'err'); return; }
+  document.getElementById('login-btn').disabled = true;
+  try {
+    var r = await fetch('/admin/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: pwd })
+    });
+    var j = await r.json();
+    if (j.success) {
+      document.getElementById('login-panel').classList.remove('active');
+      document.getElementById('admin-panel').classList.add('active');
+      loadStatus();
+    } else {
+      setMsg('login-msg', j.error || 'Wrong password', 'err');
+    }
+  } catch (e) {
+    setMsg('login-msg', 'Connection error', 'err');
+  }
+  document.getElementById('login-btn').disabled = false;
+}
+
+async function loadStatus() {
+  try {
+    var r = await fetch('/admin/status');
+    if (r.status === 401) {
+      document.getElementById('admin-panel').classList.remove('active');
+      document.getElementById('login-panel').classList.add('active');
+      return;
+    }
+    var j = await r.json();
+    document.getElementById('s-ver').textContent = j.version || '—';
+    document.getElementById('s-hash').textContent = j.sha256 ? j.sha256.substring(0,32) + '...' : '—';
+    document.getElementById('s-size').textContent = j.size || '—';
+    document.getElementById('s-date').textContent = j.uploadedAt ? new Date(j.uploadedAt).toLocaleString() : '—';
+    var zipEl = document.getElementById('s-zip');
+    zipEl.textContent = j.hasZip ? 'Yes' : 'No';
+    zipEl.className = 'status-value ' + (j.hasZip ? 'green' : '');
+  } catch {}
+}
+
+async function doUpload() {
+  var ver = document.getElementById('up-ver').value.trim();
+  if (!ver) { setMsg('upload-msg', 'Version is required', 'err'); return; }
+  if (!selectedFile) { setMsg('upload-msg', 'Select a ZIP file', 'err'); return; }
+
+  document.getElementById('upload-btn').disabled = true;
+  setMsg('upload-msg', 'Uploading...', '');
+  var track = document.getElementById('prog-track');
+  var fill = document.getElementById('prog-fill');
+  track.style.display = 'block';
+  fill.style.width = '0%';
+
+  var form = new FormData();
+  form.append('version', ver);
+  form.append('file', selectedFile);
+
+  try {
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', '/admin/upload');
+    xhr.upload.onprogress = function(e) {
+      if (e.lengthComputable) fill.style.width = ((e.loaded/e.total)*100).toFixed(1) + '%';
+    };
+    xhr.onload = function() {
+      try {
+        var j = JSON.parse(xhr.responseText);
+        if (j.success) {
+          setMsg('upload-msg', 'Upload successful! v' + j.version + ' — SHA256: ' + j.sha256.substring(0,16) + '...', 'ok');
+          loadStatus();
+          selectedFile = null;
+          document.getElementById('file-name').style.display = 'none';
+          document.getElementById('up-ver').value = '';
+        } else {
+          setMsg('upload-msg', j.error || 'Upload failed', 'err');
+        }
+      } catch { setMsg('upload-msg', 'Invalid response', 'err'); }
+      document.getElementById('upload-btn').disabled = false;
+      setTimeout(function(){ track.style.display='none'; }, 1000);
+    };
+    xhr.onerror = function() {
+      setMsg('upload-msg', 'Connection error', 'err');
+      document.getElementById('upload-btn').disabled = false;
+      track.style.display = 'none';
+    };
+    xhr.send(form);
+  } catch (e) {
+    setMsg('upload-msg', 'Error: ' + e, 'err');
+    document.getElementById('upload-btn').disabled = false;
+    track.style.display = 'none';
+  }
+}
+
+document.getElementById('login-pwd').addEventListener('keypress', function(e) {
+  if (e.key === 'Enter') doLogin();
+});
+</script>
+</body>
+</html>

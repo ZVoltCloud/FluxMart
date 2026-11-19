@@ -1,0 +1,205 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-app-region: no-drag;
+  outline: none !important;
+}
+
+*:focus {
+  outline: none !important;
+}
+
+::selection {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+}
+
+::-moz-selection {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+}
+
+html, body {
+  background-color: var(--background) !important;
+}
+
+body {
+  font-family: "Poppins", sans-serif;
+  color: var(--text);
+  overflow: hidden;
+  height: 100vh;
+}
+
+.container {
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  position: relative;
+  background-color: var(--background);
+  height: 100vh;
+  overflow: hidden;
+}
+
+::-webkit-scrollbar {
+  width: var(--scrollbar-size);
+  height: var(--scrollbar-size);
+}
+
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border: 2px solid var(--scrollbar-track);
+  border-radius: 999px;
+  min-width: 36px;
+  min-height: 36px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: var(--scrollbar-thumb-active);
+}
+
+::-webkit-scrollbar-corner {
+  background: var(--scrollbar-track);
+}
+
+/* Keep the draggable WebView2 styling; use standard properties elsewhere. */
+@supports not selector(::-webkit-scrollbar) {
+  * {
+    scrollbar-width: auto;
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+  }
+}
+
+/* layout helpers */
+.content-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: stretch;
+}
+
+.tab-content .card {
+  flex: 1 1 400px;
+  min-width: 300px;
+}
+
+.main-footer {
+  text-align: center;
+  padding: 10px 0;
+  font-size: 12px;
+  color: var(--text-light);
+  opacity: 0.5;
+  letter-spacing: 0.5px;
+}
+
+/* ── Stats dashboard cards ───────────────────────────────── */
+.stats-dashboard {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.stat-card {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 16px 18px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.25s ease;
+}
+
+.stat-card:hover {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.stat-card-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+.stat-card-value {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -0.5px;
+  font-variant-numeric: tabular-nums;
+  transition: color 0.3s ease;
+}
+
+.stat-card-value.accent { color: var(--primary-light); }
+.stat-card-value.success { color: var(--success); }
+.stat-card-value.warning { color: var(--warning); }
+.stat-card-value.error { color: var(--error); }
+
+.stat-card-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 4px;
+  letter-spacing: 0.1px;
+}
+
+/* ── Skeleton loading ────────────────────────────────────── */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.04) 25%,
+    rgba(255, 255, 255, 0.08) 50%,
+    rgba(255, 255, 255, 0.04) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.5s ease-in-out infinite;
+  border-radius: 6px;
+}
+
+.skeleton-text {
+  height: 14px;
+  margin-bottom: 8px;
+  border-radius: 4px;
+}
+
+.skeleton-text.short { width: 40%; }
+.skeleton-text.medium { width: 65%; }
+.skeleton-text.long { width: 90%; }
+
+.skeleton-card {
+  height: 120px;
+  border-radius: 12px;
+}
+
+@keyframes skeletonShimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ══ Silver metallic gradient utilities ═══════════════════════════ */
+.metallic-text {
+  background: var(--metallic-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.metallic-border {
+  border-image: var(--metallic-gradient) 1;
+}
+
+.metallic-bg {
+  background: var(--metallic-gradient);
+}

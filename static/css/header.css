@@ -1,0 +1,63 @@
+/* Old header styles kept for login compatibility */
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+  animation: fadeIn 0.5s ease-out;
+  -webkit-user-select: none;
+  user-select: none;
+  position: relative;
+  z-index: 10;
+  -webkit-app-region: drag;
+  cursor: default !important;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  -webkit-app-region: drag;
+  cursor: default !important;
+}
+
+.logo-icon-text,
+h1,
+.window-controls,
+.window-btn,
+.tabs,
+.tab-btn,
+.nav-item,
+.sidebar-nav,
+.sidebar-toggle {
+  -webkit-app-region: no-drag;
+}
+
+.logo-icon-text {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.header-logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+h1 {
+  font-size: 20px;
+  background: var(--metallic-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 600;
+  text-shadow: none;
+}

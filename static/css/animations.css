@@ -1,0 +1,96 @@
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideIn {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(192, 192, 192, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(192, 192, 192, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(192, 192, 192, 0); }
+}
+
+@keyframes ripple {
+  0% { transform: scale(0, 0); opacity: 0.5; }
+  20% { transform: scale(25, 25); opacity: 0.3; }
+  100% { opacity: 0; transform: scale(40, 40); }
+}
+
+/* ═══════════════════════════════════════════════
+   Login page animations
+   ═══════════════════════════════════════════════ */
+
+@keyframes bgShift {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  50% { transform: translate(-5%, -3%) rotate(1deg); }
+  100% { transform: translate(3%, 2%) rotate(-1deg); }
+}
+
+@keyframes orbFloat {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  25% { transform: translate(30px, -20px) scale(1.05); }
+  50% { transform: translate(-15px, 25px) scale(0.95); }
+  75% { transform: translate(20px, 15px) scale(1.02); }
+}
+
+@keyframes orbFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes loginCardEnter {
+  from { opacity: 0; transform: translateY(20px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes tabUnderlineScale {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+@keyframes particleDrift {
+  0% { transform: translateY(0) translateX(0); opacity: 0; }
+  10% { opacity: 0.4; }
+  90% { opacity: 0.2; }
+  100% { transform: translateY(-100vh) translateX(30px); opacity: 0; }
+}
+
+/* ═══════════════════════════════════════════════
+   Main Container Animations
+   ═══════════════════════════════════════════════ */
+
+@keyframes containerEnter {
+  from { opacity: 0; transform: scale(0.95) translateY(20px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes containerExit {
+  from { opacity: 1; transform: scale(1) translateY(0); }
+  to { opacity: 0; transform: scale(0.95) translateY(20px); }
+}
+
+.animate-enter {
+  animation: containerEnter 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  overflow: hidden !important;
+  will-change: transform, opacity;
+}
+
+.animate-exit {
+  animation: containerExit 0.3s cubic-bezier(0.7, 0, 0.84, 0) forwards;
+  overflow: hidden !important;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+body.animating, html.animating {
+  overflow: hidden !important;
+  height: 100vh !important;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

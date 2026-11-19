@@ -1,0 +1,2170 @@
+<!DOCTYPE html>
+<html lang="en" style="background-color: #000000 !important;">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FluxMart</title>
+    <script>
+        // Set background immediately to avoid gray flicker
+        document.documentElement.style.backgroundColor = '#000000';
+    </script>
+    <link rel="stylesheet" href="/static/css/variables.css">
+    <link rel="stylesheet" href="/static/css/base.css">
+    <link rel="stylesheet" href="/static/css/window-controls.css">
+    <link rel="stylesheet" href="/static/css/loading-screen.css">
+    <link rel="stylesheet" href="/static/css/discord-login.css">
+    <link rel="stylesheet" href="/static/css/header.css">
+    <link rel="stylesheet" href="/static/css/tabs.css">
+    <link rel="stylesheet" href="/static/css/sidebar.css">
+    <link rel="stylesheet" href="/static/css/statusbar.css">
+    <link rel="stylesheet" href="/static/css/toast.css">
+    <link rel="stylesheet" href="/static/css/cards.css">
+    <link rel="stylesheet" href="/static/css/forms.css">
+    <link rel="stylesheet" href="/static/css/progress.css">
+    <link rel="stylesheet" href="/static/css/log.css">
+    <link rel="stylesheet" href="/static/css/table.css">
+    <link rel="stylesheet" href="/static/css/settings.css">
+    <link rel="stylesheet" href="/static/css/animations.css">
+    <link rel="stylesheet" href="/static/css/responsive.css">
+    <link rel="stylesheet" href="/static/css/others.css">
+    <link rel="stylesheet" href="/static/css/token-manager.css">
+
+    <link rel="stylesheet" href="/static/css/installer.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        body,
+        html {
+            background-color: #000000 !important;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
+        }
+
+        #login-overlay {
+            background-color: #000000 !important;
+        }
+
+        #login-drag-bar,
+        #main-drag-bar {
+            cursor: default !important;
+            pointer-events: auto !important;
+            z-index: 9999 !important;
+        }
+
+        .login-window-controls {
+            z-index: 9999 !important;
+            position: absolute !important;
+            top: 20px !important;
+            right: 30px !important;
+            display: flex !important;
+            flex-direction: row !important;
+            gap: 5px !important;
+            pointer-events: auto !important;
+        }
+
+        .window-controls {
+            z-index: 9999 !important;
+            display: flex !important;
+            flex-direction: row !important;
+            gap: 5px !important;
+            pointer-events: auto !important;
+        }
+    </style>
+</head>
+
+<body style="background-color: #000000 !important;">
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                if (document.activeElement) {
+                    document.activeElement.blur();
+                }
+            }, 100);
+
+            // Prevent dragging when clicking on inputs/buttons/etc. (allows text selection)
+            const preventDragOnInputs = () => {
+                const stopProp = (e) => {
+                    // Stop event from bubbling up to the window (where pywebview's easy_drag listener is)
+                    e.stopPropagation();
+                };
+
+                const elements = document.querySelectorAll('button, .window-btn, input, select, textarea, .tab-btn, .nav-item, .login-tab-btn, .password-toggle-icon, .discord-login-btn, .discord-login-skip, .discord-login-content, .sidebar-nav, .sidebar-toggle');
+                elements.forEach(el => {
+                    el.addEventListener('mousedown', stopProp);
+                    el.addEventListener('click', stopProp);
+                });
+
+                // Prevent dragging on specific elements (allows text selection and clicks)
+                window.addEventListener('mousedown', (e) => {
+                    // List of elements that should block dragging
+                    const target = e.target.closest('button, .window-btn, input, select, textarea, .tab-btn, .nav-item, .login-tab-btn, .password-toggle-icon, .card, .login-content, .discord-login-content, .discord-login-btn, .discord-login-skip, .sidebar-nav, .sidebar-toggle');
+
+                    if (target) {
+                        // If it's the password toggle, we DON'T stop propagation in the capture phase
+                        // because we want the toggle logic in login.js to run.
+                        // The toggle listener itself will stop propagation to prevent window drag.
+                        const isToggle = target.classList.contains('password-toggle-icon') || target.closest('.password-toggle-icon');
+                        if (!isToggle) {
+                            e.stopPropagation();
+                        }
+                    }
+                }, true); // Capture phase!
+            };
+
+            preventDragOnInputs();
+        });
+    </script>
+
+    <div class="login-overlay" id="login-overlay" style="display: none;"
+        data-saved-username="{{ saved.username if saved else '' }}"
+        data-saved-password="{{ saved.password if saved else '' }}"
+        data-auto-login-enabled="{{ 'true' if saved and saved.auto_login_enabled else 'false' }}">
+        <div id="login-drag-bar" style="position: absolute; top: 0; left: 0; width: 100%; height: 60px; z-index: 1999;">
+        </div>
+        <div class="login-window-controls">
+            <span class="window-btn minimize" title="Minimize" onclick="minimizeWindow()"></span>
+            <span class="window-btn close" title="Close" onclick="closeWindow()"></span>
+        </div>
+        <!-- Animated background orbs -->
+        <div class="login-bg-orb"></div>
+        <div class="login-bg-orb"></div>
+        <div class="login-bg-orb"></div>
+        <div class="login-bg-orb"></div>
+
+        <!-- Floating particles -->
+        <div class="login-particles">
+            <div class="login-particle"></div>
+            <div class="login-particle"></div>
+            <div class="login-particle"></div>
+            <div class="login-particle"></div>
+            <div class="login-particle"></div>
+            <div class="login-particle"></div>
+            <div class="login-particle"></div>
+            <div class="login-particle"></div>
+        </div>
+
+        <div class="login-content">
+            <div class="login-logo">
+                <div class="login-logo-icon"><img src="/static/img/msklogo.png" alt="MSK" class="login-logo-img"></div>
+                <h1 class="no-translate">FluxMart</h1>
+                <p class="login-subtitle">Authentication Required</p>
+            </div>
+            <div class="login-form" id="login-form">
+                <div class="login-tabs">
+                    <button class="login-tab-btn active" data-login-tab="login"
+                        onclick="switchLoginTab('login')">Login</button>
+                    <button class="login-tab-btn" data-login-tab="register"
+                        onclick="switchLoginTab('register')">Register</button>
+                </div>
+                <div class="login-tab-content active" id="login-tab-content">
+                    <div class="input-group">
+                        <label for="login-username">Username</label>
+                        <input type="text" id="login-username" placeholder="Enter your username"
+                            value="{{ saved.username if saved else '' }}">
+                    </div>
+                    <div class="input-group">
+                        <label for="login-password">Password</label>
+                        <div class="input-wrapper">
+                            <input type="password" id="login-password" placeholder="Enter your password"
+                                value="{{ saved.password if saved else '' }}">
+                            <span class="password-toggle-icon" id="login-password-toggle">
+                                <svg class="eye-open" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                                <svg class="eye-closed" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                    <path
+                                        d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68">
+                                    </path>
+                                    <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61">
+                                    </path>
+                                    <line x1="2" x2="22" y1="2" y2="22"></line>
+                                </svg>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="setting-item"
+                        style="border-bottom: none; padding: 5px 0; justify-content: space-between; align-items: center;">
+                        <div class="setting-label">
+                            <span style="font-size: 13px;">Remember Me</span>
+                            <span class="setting-description" style="font-size: 11px;">Auto login next time</span>
+                        </div>
+                        <div class="setting-control">
+                            <label class="toggle">
+                                <input type="checkbox" id="login-remember" {{ 'checked' if not saved or (saved and
+                                    saved.username) else '' }}>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <button class="primary-btn login-btn" onclick="doLogin()">Login</button>
+                    <div class="login-status" id="login-status-login"></div>
+                </div>
+                <div class="login-tab-content" id="register-tab-content">
+                    <div class="input-group">
+                        <label for="reg-username">Username</label>
+                        <input type="text" id="reg-username" placeholder="Choose a username">
+                    </div>
+                    <div class="input-group">
+                        <label for="reg-password">Password</label>
+                        <div class="input-wrapper">
+                            <input type="password" id="reg-password" placeholder="Choose a password">
+                            <span class="password-toggle-icon" id="reg-password-toggle">
+                                <svg class="eye-open" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                                <svg class="eye-closed" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                    <path
+                                        d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68">
+                                    </path>
+                                    <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61">
+                                    </path>
+                                    <line x1="2" x2="22" y1="2" y2="22"></line>
+                                </svg>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label for="reg-license">License Key</label>
+                        <input type="text" id="reg-license" placeholder="Enter your license key">
+                    </div>
+                    <button class="primary-btn login-btn" onclick="doRegister()">Register</button>
+                    <div class="login-status" id="login-status-register"></div>
+                </div>
+            </div>
+            <div class="login-footer">© 2026 FluxMart - All Rights Reserved</div>
+        </div>
+    </div>
+
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="loading-content">
+            <div class="loading-logo-wrapper">
+                <div class="login-logo-icon large loading-logo-pulse"><img src="/static/img/msklogo.png" alt="MSK"
+                        class="login-logo-img"></div>
+                <div class="loading-logo-ring"></div>
+            </div>
+            <h1 class="no-translate loading-title">FluxMart</h1>
+            <p class="loading-version">v3.3.4</p>
+            <div class="loading-bar">
+                <div class="loading-progress" id="loading-progress"></div>
+            </div>
+            <div class="loading-footer-row">
+                <div class="loading-status" id="loading-status">Starting...</div>
+                <div class="loading-percent" id="loading-percent">0%</div>
+            </div>
+            <div class="loading-dots">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="container app-layout" id="main-container" style="display: none;">
+
+        <!-- ═══════════════════ SIDEBAR ═══════════════════ -->
+        <nav class="sidebar" id="app-sidebar">
+            <div class="sidebar-header">
+                <img src="/static/img/msklogo.png" alt="MSK" class="sidebar-logo">
+                <span class="sidebar-title no-translate">FluxMart</span>
+            </div>
+
+            <div class="sidebar-nav">
+                <button class="nav-item active" data-tab="generator">
+                    <span class="nav-icon"><img src="/static/img/msk-logo.png" alt="Generator" class="nav-img-icon"></span>
+                    <span class="nav-label">Generator</span>
+                    <span class="nav-shortcut">Ctrl+1</span>
+                </button>
+                <button class="nav-item" data-tab="token-things">
+                    <span class="nav-icon"><img src="/static/img/nav-token-things.png" alt="Tokens Things" class="nav-img-icon"></span>
+                    <span class="nav-label">Tokens Things</span>
+                    <span class="nav-shortcut">Ctrl+2</span>
+                </button>
+                <button class="nav-item" data-tab="humanizer">
+                    <span class="nav-icon"><img src="/static/img/nav-token-manager.png" alt="Token Manager" class="nav-img-icon"></span>
+                    <span class="nav-label">Token Manager</span>
+                    <span class="nav-shortcut">Ctrl+3</span>
+                </button>
+                <button class="nav-item" data-tab="phone-verify">
+                    <span class="nav-icon"><img src="/static/img/nav-phone-verify.png" alt="Phone Verify" class="nav-img-icon"></span>
+                    <span class="nav-label">Phone Verify</span>
+                    <span class="nav-shortcut">Ctrl+4</span>
+                </button>
+                <button class="nav-item" data-tab="terminal">
+                    <span class="nav-icon"><img src="/static/img/nav-terminal.png" alt="Terminal" class="nav-img-icon"></span>
+                    <span class="nav-label">Terminal</span>
+                    <span class="nav-shortcut">Ctrl+5</span>
+                </button>
+                <button class="nav-item" data-tab="settings">
+                    <span class="nav-icon"><img src="/static/img/nav-settings.png" alt="Settings" class="nav-img-icon"></span>
+                    <span class="nav-label">Settings</span>
+                    <span class="nav-shortcut">Ctrl+6</span>
+                </button>
+
+                <button class="nav-item" data-tab="version-history">
+                    <span class="nav-icon"><img src="/static/img/nav-version-history.png" alt="Version History" class="nav-img-icon"></span>
+                    <span class="nav-label">Version History</span>
+                    <span class="nav-shortcut">Ctrl+9</span>
+                </button>
+            </div>
+
+            <div class="sidebar-footer">
+                <button class="sidebar-toggle" id="sidebar-toggle" title="Ctrl+B">
+                    <svg viewBox="0 0 24 24">
+                        <polyline points="11 17 6 12 11 7" />
+                        <polyline points="18 17 13 12 18 7" />
+                    </svg>
+                    <span class="sidebar-toggle-label">Collapse</span>
+                </button>
+            </div>
+        </nav>
+
+        <!-- ═══════════════════ MAIN CONTENT ═══════════════════ -->
+        <div class="main-content">
+            <div class="main-header" id="main-drag-bar">
+                <span class="header-tab-label" id="header-tab-label">Generator</span>
+                <div class="window-controls">
+                    <span class="window-btn minimize" title="Minimize" onclick="minimizeWindow()"></span>
+                    <span class="window-btn close" title="Close" onclick="closeWindow()"></span>
+                </div>
+            </div>
+
+            <div class="main-scroll">
+
+                <!-- ═══════════════════ GENERATOR TAB ═══════════════════ -->
+                <div class="tab-content active" id="generator-tab">
+
+                    <!-- Stats Dashboard -->
+                    <div class="stats-dashboard">
+                        <div class="stat-card">
+                            <div class="stat-card-label">Total Generated</div>
+                            <div class="stat-card-value accent" id="dash-total">0</div>
+                            <div class="stat-card-sub">all time</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-card-label">Success Rate</div>
+                            <div class="stat-card-value success" id="dash-rate">0%</div>
+                            <div class="stat-card-sub">valid tokens</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-card-label">Speed</div>
+                            <div class="stat-card-value warning" id="dash-speed">0</div>
+                            <div class="stat-card-sub">tokens / hour</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-card-label">Session</div>
+                            <div class="stat-card-value" id="dash-session">0</div>
+                            <div class="stat-card-sub">this session</div>
+                        </div>
+                    </div>
+
+                    <div class="content-row">
+                        <div class="card">
+                            <h2>Token Generator</h2>
+                            <div class="setting-item vertical">
+                                <div class="setting-label">
+                                    <span>Number of Tokens to Generate</span>
+                                </div>
+                                <div class="setting-control">
+                                    <input type="number" id="gen-token-count" value="1" min="1" step="1">
+                                </div>
+                            </div>
+                            <div class="setting-item vertical">
+                                <div class="setting-label">
+                                    <span>Threads</span>
+                                </div>
+                                <div class="setting-control">
+                                    <input type="number" id="gen-threads" value="1" min="1" max="10" step="1">
+                                </div>
+                            </div>
+                            <div class="setting-item">
+                                <div class="setting-label">
+                                    <span>Headless Mode</span>
+                                    <span class="setting-description">Run browser without visible window</span>
+                                </div>
+                                <div class="setting-control">
+                                    <label class="toggle">
+                                        <input type="checkbox" id="gen-headless">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="setting-item">
+                                <div class="setting-label">
+                                    <span>Auto Captcha Solver</span>
+                                    <span class="setting-description">Automatically solve hCaptcha challenges</span>
+                                </div>
+                                <div class="setting-control">
+                                    <label class="toggle">
+                                        <input type="checkbox" id="gen-auto-captcha" checked>
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="actions">
+                                <button id="gen-start-btn" class="primary-btn" onclick="startGenerator()">Start
+                                    Generating</button>
+                                <button id="gen-stop-btn" class="secondary-btn" disabled
+                                    onclick="stopGenerator()">Stop</button>
+                                <button id="gen-clear-btn" class="secondary-btn"
+                                    onclick="clearGeneratorStats()">Clear</button>
+                            </div>
+                        </div>
+
+                        <div class="card status-card">
+                            <h2>Generation Status</h2>
+                            <div class="progress-container">
+                                <div class="progress-bar">
+                                    <div class="progress" id="gen-progress" style="width: 0%"></div>
+                                </div>
+                                <div class="progress-text" id="gen-progress-text">0/0</div>
+                            </div>
+                            <div class="stats">
+                                <div class="stat-item">
+                                    <span class="stat-value success-text" id="gen-valid">0</span>
+                                    <span class="stat-label">Valid</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-value warning-text" id="gen-locked">0</span>
+                                    <span class="stat-label">Locked</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-value error-text" id="gen-invalid">0</span>
+                                    <span class="stat-label">Invalid</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="token-things-tab">
+                    <div class="content-row">
+                        <div class="card">
+                            <h2>Token Checker</h2>
+                            <div class="drag-drop-area" id="checker-drag-area">
+                                <div class="drag-drop-content">
+                                    <div class="upload-icon">+</div>
+                                    <span>Drag & Drop Tokens File or Click to Upload</span>
+                                    <input type="file" id="checker-file" accept=".txt" class="file-input">
+                                </div>
+                                <div class="file-info" id="checker-file-info">No file selected</div>
+                            </div>
+                            <div class="input-group">
+                                <label for="checker-textarea">Or Paste Tokens (one per line)</label>
+                                <textarea id="checker-textarea" placeholder="Enter tokens here...
+Format: email:password:token or just token"></textarea>
+                            </div>
+                            <div class="actions">
+                                <button id="checker-start-btn" class="primary-btn" onclick="startChecker()">Check
+                                    Tokens</button>
+                                <button id="checker-stop-btn" class="secondary-btn" disabled
+                                    onclick="stopChecker()">Stop</button>
+                                <button id="checker-clear-btn" class="secondary-btn"
+                                    onclick="clearCheckerInput()">Clear</button>
+                            </div>
+                        </div>
+
+                        <div class="card status-card">
+                            <h2>Checker Results</h2>
+                            <div class="progress-container">
+                                <div class="progress-bar">
+                                    <div class="progress" id="checker-progress" style="width: 0%"></div>
+                                </div>
+                                <div class="progress-text" id="checker-progress-text">0/0</div>
+                            </div>
+                            <div class="stats">
+                                <div class="stat-item">
+                                    <span class="stat-value success-text" id="checker-valid">0</span>
+                                    <span class="stat-label">Valid</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-value warning-text" id="checker-locked">0</span>
+                                    <span class="stat-label">Locked</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-value error-text" id="checker-invalid">0</span>
+                                    <span class="stat-label">Invalid</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Token Splitter -->
+                    <div class="content-row" style="margin-top: 20px;">
+                        <div class="card">
+                            <h2>Token Splitter</h2>
+                            <p class="setting-description" style="margin-bottom: 14px;">Extract raw tokens from
+                                <code>email:password:token</code> format. Duplicates removed automatically.
+                            </p>
+                            <div class="drag-drop-area" id="splitter-drag-area">
+                                <div class="drag-drop-content">
+                                    <div class="upload-icon">+</div>
+                                    <span>Drag &amp; Drop Tokens File or Click to Upload</span>
+                                    <input type="file" id="splitter-file" accept=".txt" class="file-input">
+                                </div>
+                                <div class="file-info" id="splitter-file-info">No file selected</div>
+                            </div>
+                            <div class="input-group">
+                                <label for="splitter-textarea">Or Paste Tokens (one per line)</label>
+                                <textarea id="splitter-textarea" placeholder="Enter tokens here...
+Format: mail:password:token"></textarea>
+                            </div>
+                            <div class="actions">
+                                <button id="splitter-start-btn" class="primary-btn" onclick="startSplitter()">Start
+                                    Splitter</button>
+                                <button id="splitter-stop-btn" class="secondary-btn" disabled
+                                    onclick="stopSplitter()">Stop</button>
+                                <button id="splitter-clear-btn" class="secondary-btn"
+                                    onclick="clearSplitterInput()">Clear</button>
+                            </div>
+                        </div>
+
+                        <div class="card status-card">
+                            <h2>Splitter Status</h2>
+                            <div class="progress-container">
+                                <div class="progress-bar">
+                                    <div class="progress" id="splitter-progress" style="width: 0%"></div>
+                                </div>
+                                <div class="progress-text" id="splitter-progress-text">0/0</div>
+                            </div>
+                            <div class="stats">
+                                <div class="stat-item">
+                                    <span class="stat-value success-text" id="splitter-saved">0</span>
+                                    <span class="stat-label">Saved</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-value" style="color: var(--warning);" id="splitter-dupes">0</span>
+                                    <span class="stat-label">Duplicates</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-value error-text" id="splitter-skipped">0</span>
+                                    <span class="stat-label">Skipped</span>
+                                </div>
+                            </div>
+                            <div id="splitter-status-msg"
+                                style="margin-top: 14px; font-size: 12px; color: var(--text-light); min-height: 18px;">
+                            </div>
+                            <div id="splitter-output-path"
+                                style="margin-top: 6px; font-size: 11px; color: var(--text-muted); opacity: 0.7;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Humanizer (tokens input + status) -->
+                    <div class="content-row" style="margin-top: 20px;">
+                        <div class="card">
+                            <h2>Humanizer</h2>
+                            <p class="setting-description" style="margin-bottom: 10px;">Apply humanization (avatar, bio,
+                                pronouns) to existing tokens.</p>
+                            <div class="drag-drop-area" id="humanizer-drag-area">
+                                <div class="drag-drop-content">
+                                    <div class="upload-icon">+</div>
+                                    <span>Drag &amp; Drop Tokens File or Click to Upload</span>
+                                    <input type="file" id="humanizer-file" accept=".txt" class="file-input">
+                                </div>
+                                <div class="file-info" id="humanizer-file-info">No file selected</div>
+                            </div>
+                            <div class="input-group">
+                                <label for="humanizer-textarea">Or Paste Tokens (one per line)</label>
+                                <textarea id="humanizer-textarea" placeholder="Enter tokens here...
+Format: email:password:token or just token"></textarea>
+                            </div>
+                            <div class="actions">
+                                <button id="humanizer-start-btn" class="primary-btn" onclick="startHumanizer()">Start
+                                    Humanizer</button>
+                                <button id="humanizer-stop-btn" class="secondary-btn" disabled
+                                    onclick="stopHumanizer()">Stop</button>
+                                <button id="humanizer-clear-btn" class="secondary-btn"
+                                    onclick="clearHumanizerInput()">Clear</button>
+                            </div>
+                        </div>
+
+                        <div class="card status-card">
+                            <h2>Humanizer Status</h2>
+                            <div class="progress-container">
+                                <div class="progress-bar">
+                                    <div class="progress" id="humanizer-progress" style="width: 0%"></div>
+                                </div>
+                                <div class="progress-text" id="humanizer-progress-text">0/0</div>
+                            </div>
+                            <div class="stats">
+                                <div class="stat-item">
+                                    <span class="stat-value success-text" id="humanizer-success">0</span>
+                                    <span class="stat-label">Success</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-value error-text" id="humanizer-failed">0</span>
+                                    <span class="stat-label">Failed</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-value" style="color: var(--warning);"
+                                        id="humanizer-skipped">0</span>
+                                    <span class="stat-label">Skipped</span>
+                                </div>
+                            </div>
+                            <div id="humanizer-status-msg"
+                                style="margin-top: 14px; font-size: 12px; color: var(--text-light); min-height: 18px;">
+                            </div>
+                            <div id="humanizer-output-path"
+                                style="margin-top: 6px; font-size: 11px; color: var(--text-muted); opacity: 0.7;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Humanizer Settings + Avatars -->
+                    <div class="content-row" style="margin-top: 20px;">
+                        <div class="card">
+                            <h2>Humanizer Settings</h2>
+                            <div class="setting-item">
+                                <div class="setting-label">
+                                    <span>Enable Humanizer</span>
+                                    <span class="setting-description">Customize generated accounts automatically</span>
+                                </div>
+                                <div class="setting-control">
+                                    <label class="toggle">
+                                        <input type="checkbox" id="humanizer-enabled">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="setting-item">
+                                <div class="setting-label">
+                                    <span>Set Avatar</span>
+                                    <span class="setting-description">Add profile pictures from selected images</span>
+                                </div>
+                                <div class="setting-control">
+                                    <label class="toggle">
+                                        <input type="checkbox" id="humanizer-avatar" checked>
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="setting-item">
+                                <div class="setting-label">
+                                    <span>Set Bio</span>
+                                    <span class="setting-description">Add random bios from bio.txt</span>
+                                </div>
+                                <div class="setting-control">
+                                    <label class="toggle">
+                                        <input type="checkbox" id="humanizer-bio" checked>
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="setting-item">
+                                <div class="setting-label">
+                                    <span>Set Pronouns</span>
+                                    <span class="setting-description">Add random pronouns</span>
+                                </div>
+                                <div class="setting-control">
+                                    <label class="toggle">
+                                        <input type="checkbox" id="humanizer-pronouns" checked>
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="setting-item">
+                                <div class="setting-label">
+                                    <span>Set Display Name</span>
+                                    <span class="setting-description">Set a display name on the account</span>
+                                </div>
+                                <div class="setting-control">
+                                    <label class="toggle">
+                                        <input type="checkbox" id="humanizer-displayname" checked>
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="setting-item" style="border-bottom: none;">
+                                <div class="setting-label">
+                                    <span>Set HypeSquad</span>
+                                    <span class="setting-description">Randomly join a HypeSquad house</span>
+                                </div>
+                                <div class="setting-control">
+                                    <label class="toggle">
+                                        <input type="checkbox" id="humanizer-hypesquad" checked>
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <h2>Avatar Images</h2>
+                            <p class="setting-description" style="margin-bottom: 15px;">Select which images to use for
+                                avatars.
+                                Click to toggle selection.</p>
+                            <div class="avatar-grid" id="avatar-grid">
+                                <div class="avatar-loading">Loading avatars...</div>
+                            </div>
+                            <div class="actions" style="margin-top: 15px;">
+                                <button class="primary-btn" onclick="selectAllAvatars()">Select All</button>
+                                <button class="secondary-btn" onclick="deselectAllAvatars()">Deselect All</button>
+                                <button class="secondary-btn" onclick="refreshAvatars()">Refresh</button>
+                            </div>
+                            <div class="drag-drop-area" id="avatar-upload-area" style="margin-top: 15px;">
+                                <div class="drag-drop-content">
+                                    <div class="upload-icon">+</div>
+                                    <span>Drag &amp; Drop Images to Add to Avatars</span>
+                                    <input type="file" id="avatar-upload-file" accept="image/*" multiple
+                                        class="file-input">
+                                </div>
+                                <div class="file-info" id="avatar-upload-info">Drop images here to add them</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="humanizer-tab">
+                    <!-- Token Manager -->
+                    <div class="tm-container">
+                        <!-- File Tabs Bar -->
+                        <div class="tm-file-bar" id="tm-file-tabs">
+                            <div class="tm-no-files">Loading token files...</div>
+                        </div>
+
+                        <!-- Stats Row -->
+                        <div class="tm-stats-bar">
+                            <div class="tm-stat">Total <span class="tm-stat-val" id="tm-stat-total">0</span></div>
+                            <div class="tm-stat">Valid <span class="tm-stat-val valid" id="tm-stat-valid">—</span></div>
+                            <div class="tm-stat">Invalid <span class="tm-stat-val invalid" id="tm-stat-invalid">—</span>
+                            </div>
+                            <div class="tm-stat">Locked <span class="tm-stat-val locked" id="tm-stat-locked">—</span>
+                            </div>
+                        </div>
+
+                        <!-- Toolbar -->
+                        <div class="tm-toolbar">
+                            <div class="tm-search-wrap">
+                                <svg class="tm-search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2">
+                                    <circle cx="11" cy="11" r="8" />
+                                    <path d="M21 21l-4.35-4.35" />
+                                </svg>
+                                <input type="text" class="tm-search" id="tm-search" placeholder="Search accounts..."
+                                    oninput="tmSearch(this.value)">
+                            </div>
+                            <div class="tm-toolbar-actions">
+                                <button class="tm-tool-btn tm-check-btn" onclick="tmStartCheck()" id="tm-check-btn"
+                                    title="Check all tokens (valid/invalid/locked)">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <path d="M22 11.08V12a10 10 0 11-5.93-9.14" />
+                                        <polyline points="22 4 12 14.01 9 11.01" />
+                                    </svg>
+                                    Check
+                                </button>
+                                <button class="tm-tool-btn" onclick="tmExport('raw')"
+                                    title="Export full lines to clipboard">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                                        <polyline points="7 10 12 15 17 10" />
+                                        <line x1="12" y1="15" x2="12" y2="3" />
+                                    </svg>
+                                    Export
+                                </button>
+                                <button class="tm-tool-btn" onclick="tmExport('token_only')" title="Copy tokens only">
+                                    Tokens Only
+                                </button>
+                                <button class="tm-tool-btn" onclick="tmRefreshFiles()" title="Refresh files">
+                                    ↻ Refresh
+                                </button>
+                                <button class="tm-tool-btn tm-clean-btn" onclick="tmRemoveDead()" id="tm-removedead-btn"
+                                    title="Remove locked and invalid tokens from current file">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <path
+                                            d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+                                    </svg>
+                                    Remove Dead
+                                </button>
+                                <button class="tm-tool-btn tm-clean-btn" onclick="tmCleanAllTxt()" id="tm-clean-btn"
+                                    title="Delete all .txt files from data/output">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <polyline points="3 6 5 6 21 6" />
+                                        <path
+                                            d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+                                    </svg>
+                                    Clean All
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Data Table -->
+                        <div class="tm-table-wrap">
+                            <table class="tm-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width:32px"><input type="checkbox"
+                                                onchange="tmSelectAll(this.checked)"></th>
+                                        <th>USERNAME</th>
+                                        <th>TOKEN</th>
+                                        <th>EMAIL</th>
+                                        <th>STATUS</th>
+                                        <th style="width:80px">ACTIONS</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tm-table-body">
+                                    <tr>
+                                        <td colspan="6"
+                                            style="text-align:center;padding:40px;color:var(--text-secondary)">
+                                            Select a token file to view accounts</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="settings-tab">
+                    <div class="settings-container">
+                        <div class="settings-section">
+                            <h2>Language Settings</h2>
+                            <div class="setting-item">
+                                <div class="setting-label">
+                                    <span>App Language</span>
+                                    <span class="setting-description">Select your preferred language.</span>
+                                </div>
+                                <div class="setting-control">
+                                    <select id="settings-language">
+                                        <option value="en">English</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-section">
+                            <h2>Browser Method</h2>
+                            <div class="setting-item">
+                                <div class="setting-label">
+                                    <span>Browser Engine</span>
+                                    <span class="setting-description">Choose which browser to use for token generation. All engines support the AI Text Solver.</span>
+                                </div>
+                                <div class="setting-control">
+                                    <select id="settings-browser-method" onchange="onBrowserMethodChange()">
+                                        <option value="camoufox">Camoufox</option>
+                                        <option value="brave">Brave</option>
+                                        <option value="chromium">Chromium</option>
+                                        <option value="chromium2">Chromium 2</option>
+                                        <option value="clearcote">Clearcote</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="setting-item">
+                                <div class="setting-label">
+                                    <span>Windows Manager</span>
+                                    <span class="setting-description">Automatically manage browser windows in a grid to prevent overlapping.</span>
+                                </div>
+                                <div class="setting-control">
+                                    <label class="toggle">
+                                        <input type="checkbox" id="settings-windows-manager" checked>
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="setting-item">
+                                <div class="setting-label">
+                                    <span>Save Fingerprint</span>
+                                    <span class="setting-description">Save format as mail:pass:token:xfingerprint.
+                                        Useful for humanization/login later.</span>
+                                </div>
+                                <div class="setting-control">
+                                    <label class="toggle">
+                                        <input type="checkbox" id="settings-save-fingerprint">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="setting-item" style="border-bottom: none;">
+                                <div class="setting-label">
+                                    <span>Use Custom Fingerprint</span>
+                                    <span class="setting-description">Inject a saved fingerprint from
+                                        <code>data/input/fingerprints.txt</code> instead of fetching a fresh one. Makes
+                                        accounts appear older. Each fingerprint is one-use only. Copy fingerprints from
+                                        MskRequest output. <strong style="color:#f59e0b;">⚠ Does NOT work with Data
+                                            Saver ON.</strong></span>
+                                </div>
+                                <div class="setting-control">
+                                    <label class="toggle">
+                                        <input type="checkbox" id="settings-use-custom-fingerprint">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="setting-item">
+                                <div class="setting-label">
+                                    <span>Real Usernames</span>
+                                    <span class="setting-description">Generate realistic human-like usernames instead of
+                                        random strings.</span>
+                                </div>
+                                <div class="setting-control">
+                                    <label class="toggle">
+                                        <input type="checkbox" id="settings-real-usernames">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-section">
+                            <h2 style="display:flex;align-items:center;gap:8px;">
+                                Smart Multi Thread
+                            </h2>
+                            <p class="setting-description" style="margin-bottom:14px;color:var(--text-secondary);">
+                                Open one browser at a time when using multiple threads. Prevents Discord from detecting
+                                simultaneous browser launches. Thread 2 (and beyond) will wait until the trigger
+                                condition of the previous thread is met before opening.
+                            </p>
+                            <div class="setting-item">
+                                <div class="setting-label">
+                                    <span>Enable Smart Multi Thread</span>
+                                    <span class="setting-description">When ON, threads open one by one based on the
+                                        trigger below instead of all at once.</span>
+                                </div>
+                                <div class="setting-control">
+                                    <label class="toggle">
+                                        <input type="checkbox" id="settings-smart-multithread">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="setting-item" style="border-bottom:none;" id="smart-multithread-trigger-row">
+                                <div class="setting-label">
+                                    <span>Open Next Thread After</span>
+                                    <span class="setting-description">Condition to wait for before starting the next
+                                        thread.</span>
+                                </div>
+                                <div class="setting-control">
+                                    <select id="settings-smart-multithread-trigger">
+                                        <option value="page_load">After first thread page load</option>
+                                        <option value="captcha_solved" selected>
+                                            ★ After captcha solved — Best
+                                        </option>
+                                        <option value="fill_info">After fill all info</option>
+                                        <option value="email_verify">After email verify</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-section">
+                            <h2>Network Settings</h2>
+                            <div class="setting-item">
+                                <div class="setting-label">
+                                    <span>Use Proxies</span>
+                                    <span class="setting-description">Route connections through proxies.</span>
+                                </div>
+                                <div class="setting-control">
+                                    <label class="toggle">
+                                        <input type="checkbox" id="settings-proxies-enabled">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="setting-item" id="settings-remove-proxy-wrapper">
+                                <div class="setting-label">
+                                    <span>Remove Proxy After Use</span>
+                                    <span class="setting-description">Removes the proxy from proxies.txt permanently
+                                        after it is assigned to a thread. Good for better no flag.</span>
+                                </div>
+                                <div class="setting-control">
+                                    <label class="toggle">
+                                        <input type="checkbox" id="settings-remove-proxy-after-use">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="setting-item" id="data-saver-container">
+                                <div class="setting-label">
+                                    <span>Data Saver Mode</span>
+                                    <span class="setting-description">Keeps a persistent browser cache (CSS/JS/assets)
+                                        per worker so Discord assets are not re-downloaded each run. Auth data (cookies,
+                                        tokens) is always wiped. Reduces usage from ~15MB to ~2-4MB after the first run.
+                                        (Credit to asem.3)<br><strong style="color:#f59e0b;">⚠ Warning: May break
+                                            hCaptcha on Brave. Custom Fingerprint will not work when Data Saver is
+                                            ON.</strong></span>
+                                </div>
+                                <div class="setting-control">
+                                    <label class="toggle">
+                                        <input type="checkbox" id="settings-data-saver">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="setting-item" id="base-browser-save-container">
+                                <div class="setting-label">
+                                    <span>Update Base Browser Save</span>
+                                    <span class="setting-description">Enable once to recreate fresh profile (after
+                                        Chrome/Discord update), then disable</span>
+                                </div>
+                                <div class="setting-control">
+                                    <label class="toggle">
+                                        <input type="checkbox" id="settings-update-browser-save">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="setting-item">
+                                <div class="setting-label">
+                                    <span>Rate Limit Checker</span>
+                                    <span class="setting-description">Check for rate limits before generating</span>
+                                </div>
+                                <div class="setting-control">
+                                    <label class="toggle">
+                                        <input type="checkbox" id="settings-ratelimit">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="settings-section">
+                            <h2>Text Solver (AI)</h2>
+
+                            <!-- Cloudflare Provider -->
+                            <div class="provider-box" id="provider-ai-cloudflare" style="margin-top: 16px;">
+                                <div class="setting-item"
+                                    style="border-bottom: 1px solid var(--border); padding-bottom: 10px;">
+                                    <div class="setting-label">
+                                        <span style="font-weight: 600;">Use Cloudflare</span>
+                                        <span class="setting-description">Free Workers AI — 10,000 requests/day. VPN-friendly. No credit card needed.</span>
+                                    </div>
+                                    <div class="setting-control">
+                                        <label class="toggle">
+                                            <input type="checkbox" id="settings-ai-cloudflare-enabled">
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="setting-item" style="border-bottom: none; flex-wrap: wrap; gap: 8px;">
+                                    <div class="setting-label">
+                                        <span>Account ID</span>
+                                        <span class="setting-description">Get your Account ID at <a href="https://dash.cloudflare.com/profile/api-tokens" target="_blank" style="color:var(--primary);text-decoration:none;">dash.cloudflare.com</a></span>
+                                    </div>
+                                    <div class="setting-control"
+                                        style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;width:100%;max-width:350px;">
+                                        <input type="password" id="settings-ai-cloudflare-account-id"
+                                            placeholder="Account ID..." autocomplete="off"
+                                            style="width:100%;">
+                                    </div>
+                                </div>
+                                <div class="setting-item" style="border-bottom: none; flex-wrap: wrap; gap: 8px;">
+                                    <div class="setting-label">
+                                        <span>API Token</span>
+                                        <span class="setting-description">Create an API token with Workers AI permissions</span>
+                                    </div>
+                                    <div class="setting-control"
+                                        style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;">
+                                        <div style="display:flex;gap:8px;align-items:center;">
+                                            <input type="password" id="settings-ai-cloudflare-key"
+                                                placeholder="API Token..." autocomplete="off"
+                                                style="width:200px;">
+                                            <button id="cloudflare-check-btn" onclick="checkCloudflareApi()"
+                                                style="padding:6px 14px;font-size:12px;border-radius:6px;border:1px solid var(--border);background:var(--bg-tertiary);color:var(--text-primary);cursor:pointer;white-space:nowrap;">Check
+                                                Key</button>
+                                        </div>
+                                        <span id="cloudflare-check-status" class="mailcow-check-status"
+                                            style="font-size:11px;"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Groq Provider -->
+                            <div class="provider-box" id="provider-ai-groq" style="margin-top: 16px;">
+                                <div class="setting-item"
+                                    style="border-bottom: 1px solid var(--border); padding-bottom: 10px;">
+                                    <div class="setting-label">
+                                        <span style="font-weight: 600;">Use Groq</span>
+                                        <span class="setting-description">Free cloud AI — very fast. Get a free key at <a href="https://console.groq.com" target="_blank" style="color:var(--primary);text-decoration:none;">console.groq.com</a>. No credit card needed.</span>
+                                    </div>
+                                    <div class="setting-control">
+                                        <label class="toggle">
+                                            <input type="checkbox" id="settings-ai-groq-enabled">
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="setting-item" style="border-bottom: none; flex-wrap: wrap; gap: 8px;">
+                                    <div class="setting-label">
+                                        <span>Groq API Key</span>
+                                        <span class="setting-description">Paste your Groq API key here. Free tier is sufficient for Text Solver usage.</span>
+                                    </div>
+                                    <div class="setting-control"
+                                        style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;">
+                                        <div style="display:flex;gap:8px;align-items:center;">
+                                            <input type="password" id="settings-ai-groq-key"
+                                                placeholder="gsk_..." autocomplete="off"
+                                                style="width:200px;">
+                                            <button id="groq-check-btn" onclick="checkGroqApi()"
+                                                style="padding:6px 14px;font-size:12px;border-radius:6px;border:1px solid var(--border);background:var(--bg-tertiary);color:var(--text-primary);cursor:pointer;white-space:nowrap;">Check
+                                                Key</button>
+                                        </div>
+                                        <span id="groq-check-status" class="mailcow-check-status"
+                                            style="font-size:11px;"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- OpenRouter Provider -->
+                            <div class="provider-box" id="provider-ai-openrouter" style="margin-top: 16px;">
+                                <div class="setting-item"
+                                    style="border-bottom: 1px solid var(--border); padding-bottom: 10px;">
+                                    <div class="setting-label">
+                                        <span style="font-weight: 600;">Use OpenRouter</span>
+                                        <span class="setting-description">Access many AI models through one API. Useful if Groq is unavailable.</span>
+                                    </div>
+                                    <div class="setting-control">
+                                        <label class="toggle">
+                                            <input type="checkbox" id="settings-ai-openrouter-enabled">
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="setting-item" style="border-bottom: none; flex-wrap: wrap; gap: 8px;">
+                                    <div class="setting-label">
+                                        <span>OpenRouter API Key</span>
+                                        <span class="setting-description">API key from <a href="https://openrouter.ai" target="_blank" style="color:var(--primary);text-decoration:none;">openrouter.ai</a>.</span>
+                                    </div>
+                                    <div class="setting-control"
+                                        style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;">
+                                        <div style="display:flex;gap:8px;align-items:center;">
+                                            <input type="password" id="settings-ai-openrouter-key"
+                                                placeholder="sk-or-..." autocomplete="off"
+                                                style="width:200px;">
+                                            <button id="openrouter-check-btn" onclick="checkOpenRouterApi()"
+                                                style="padding:6px 14px;font-size:12px;border-radius:6px;border:1px solid var(--border);background:var(--bg-tertiary);color:var(--text-primary);cursor:pointer;white-space:nowrap;">Check
+                                                Key</button>
+                                        </div>
+                                        <span id="openrouter-check-status" class="mailcow-check-status"
+                                            style="font-size:11px;"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div class="settings-section">
+                            <h2>VPN Providers</h2>
+                            <p class="setting-description" style="margin-bottom: 15px; color: var(--text-secondary);">
+                                Only one
+                                VPN can be active at a time. Enabling a new provider will automatically disable the
+                                previous
+                                one.</p>
+
+                            <!-- Mullvad Provider -->
+                            <div class="provider-box" id="provider-mullvad">
+                                <div class="setting-item">
+                                    <div class="setting-label">
+                                        <span style="font-weight: 600;">Use Mullvad</span>
+                                        <span class="setting-description">Uses preferred server list with smart
+                                            selection
+                                            (default/main
+                                            VPN)</span>
+                                    </div>
+                                    <div class="setting-control">
+                                        <label class="toggle">
+                                            <input type="checkbox" id="settings-vpn-mullvad-enabled" checked>
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-section">
+                            <h2>Email Providers</h2>
+                            <p class="setting-description" style="margin-bottom: 15px; color: var(--text-secondary);">
+                                Only one
+                                email provider can be active at a time. Enabling a new provider will automatically
+                                disable the
+                                previous one.</p>
+
+                            <!-- Hotmail-only options: visible only when Hotmail007 or Lution is enabled -->
+                            <div id="hotmail-options-group" style="display: none;">
+                                <!-- Restock Option -->
+                                <div class="setting-item">
+                                    <div class="setting-label">
+                                        <span style="font-weight: 600;">Wait for Restock (Hotmail & Outlook)</span>
+                                        <span class="setting-description">Continuously loop to try and purchase accounts
+                                            when out of
+                                            stock (Hotmail007, Lution)</span>
+                                    </div>
+                                    <div class="setting-control">
+                                        <label class="toggle">
+                                            <input type="checkbox" id="settings-email-restock-wait" checked>
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- Fast Mails Option -->
+                                <div class="setting-item">
+                                    <div class="setting-label">
+                                        <span style="font-weight: 600;">Fast Mails</span>
+                                        <span class="setting-description">Pre-buy email accounts in the background so
+                                            workers never
+                                            wait. Emails are queued ahead of time.</span>
+                                    </div>
+                                    <div class="setting-control">
+                                        <label class="toggle">
+                                            <input type="checkbox" id="settings-email-fast-mails">
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- Fast Mails Buffer Size (shown when Fast Mails is enabled) -->
+                                <div class="setting-item" id="fast-mails-buffer-row"
+                                    style="display: none; padding-left: 20px;">
+                                    <div class="setting-label">
+                                        <span>Buffer Size</span>
+                                        <span class="setting-description">Number of pre-bought accounts to keep ready in
+                                            the queue
+                                            (2-10)</span>
+                                    </div>
+                                    <div class="setting-control">
+                                        <input type="number" id="settings-email-fast-mails-buffer" class="setting-input"
+                                            value="3" min="2" max="10" style="width: 70px;">
+                                    </div>
+                                </div>
+
+                                <!-- Multi Buy Option -->
+                                <div class="setting-item">
+                                    <div class="setting-label">
+                                        <span style="font-weight: 600;">Multi Buy</span>
+                                        <span class="setting-description">Automatically fallback to other providers when
+                                            one is out
+                                            of stock (Hotmail007 → Lution)</span>
+                                    </div>
+                                    <div class="setting-control">
+                                        <label class="toggle">
+                                            <input type="checkbox" id="settings-email-multi-buy">
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- Multi Buy Provider Checkboxes (shown when Multi Buy is enabled) -->
+                                <div class="setting-item" id="multi-buy-providers-row"
+                                    style="display: none; padding-left: 20px;">
+                                    <div class="setting-label">
+                                        <span>Fallback Providers</span>
+                                        <span class="setting-description">Select which providers to include in the
+                                            fallback
+                                            chain</span>
+                                    </div>
+                                    <div class="setting-control" style="display: flex; gap: 12px; flex-wrap: wrap;">
+                                        <label
+                                            style="display: flex; align-items: center; gap: 4px; cursor: pointer; font-size: 13px;">
+                                            <input type="checkbox" id="multi-buy-hotmail007" checked> Hotmail007
+                                        </label>
+                                        <label
+                                            style="display: flex; align-items: center; gap: 4px; cursor: pointer; font-size: 13px;">
+                                            <input type="checkbox" id="multi-buy-lution" checked> Lution
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- /hotmail-options-group -->
+
+                            <!-- CyberTemp Provider -->
+                            <div class="provider-box" id="provider-cybertemp">
+                                <div class="setting-item"
+                                    style="border-bottom: 1px solid var(--border); padding-bottom: 10px;">
+                                    <div class="setting-label">
+                                        <span style="font-weight: 600;">Use CyberTemp</span>
+                                    </div>
+                                    <div class="setting-control">
+                                        <label class="toggle">
+                                            <input type="checkbox" id="settings-email-cybertemp-enabled">
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="setting-item">
+                                    <div class="setting-label">
+                                        <span>CyberTemp API Key</span>
+                                        <span class="setting-description">API key for CyberTemp temporary email
+                                            service</span>
+                                    </div>
+                                    <div class="setting-control">
+                                        <input type="text" id="settings-email-cybertemp-key"
+                                            placeholder="Enter CyberTemp API key">
+                                    </div>
+                                </div>
+                                <div class="setting-item">
+                                    <div class="setting-label">
+                                        <span>Domain</span>
+                                        <span class="setting-description">Choose a specific domain or use random for
+                                            each
+                                            account</span>
+                                    </div>
+                                    <div class="setting-control">
+                                        <select id="settings-email-cybertemp-domain">
+                                            <option value="random">Random (All Domains)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="setting-item"
+                                    style="border-bottom: none; justify-content: flex-start; gap: 12px;">
+                                    <button class="mailcow-check-btn" id="cybertemp-refresh-btn"
+                                        onclick="refreshCybertempDomains()">
+                                        Refresh Domains
+                                    </button>
+                                    <span class="mailcow-check-status" id="cybertemp-domain-status"></span>
+                                </div>
+                                <div
+                                    style="padding: 2px 0 8px 0; font-size: 11px; color: var(--text-muted); opacity: 0.6; line-height: 1.5;">
+                                    Latest refresh: <span id="cybertemp-last-refresh">never</span>. If domain doesn't
+                                    work,
+                                    press refresh. Make sure to refresh every day, or enable auto-refresh daily.
+                                </div>
+                            </div>
+
+                            <!-- DuckMail Provider -->
+                            <div class="provider-box" id="provider-duckmail" style="margin-top: 20px;">
+                                <div class="setting-item"
+                                    style="border-bottom: 1px solid var(--border); padding-bottom: 10px;">
+                                    <div class="setting-label">
+                                        <span style="font-weight: 600;">Use DuckMail</span>
+                                    </div>
+                                    <div class="setting-control">
+                                        <label class="toggle">
+                                            <input type="checkbox" id="settings-email-duckmail-enabled">
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="setting-item">
+                                    <div class="setting-label">
+                                        <span>DuckMail API Key</span>
+                                        <span class="setting-description">Optional. Leave blank to use free public domains. Get a key at <a href="https://domain.duckmail.sbs" target="_blank" style="color:var(--primary);text-decoration:none;">domain.duckmail.sbs</a> for private domains.</span>
+                                    </div>
+                                    <div class="setting-control">
+                                        <input type="text" id="settings-email-duckmail-key"
+                                            placeholder="Enter DuckMail API key">
+                                    </div>
+                                </div>
+                                <div class="setting-item">
+                                    <div class="setting-label">
+                                        <span>Domain</span>
+                                        <span class="setting-description">Choose a specific domain or use random for
+                                            each
+                                            account</span>
+                                    </div>
+                                    <div class="setting-control">
+                                        <select id="settings-email-duckmail-domain">
+                                            <option value="random">Random (All Domains)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="setting-item"
+                                    style="border-bottom: none; justify-content: flex-start; gap: 12px;">
+                                    <button class="mailcow-check-btn" id="duckmail-refresh-btn"
+                                        onclick="refreshDuckmailDomains()">
+                                        Refresh Domains
+                                    </button>
+                                    <span class="mailcow-check-status" id="duckmail-domain-status"></span>
+                                </div>
+                                <div
+                                    style="padding: 2px 0 8px 0; font-size: 11px; color: var(--text-muted); opacity: 0.6; line-height: 1.5;">
+                                    Latest refresh: <span id="duckmail-last-refresh">never</span>. If domain doesn't
+                                    work,
+                                    press refresh.
+                                </div>
+                            </div>
+
+                            <!-- Mailcow Provider -->
+                            <div class="provider-box" id="provider-mailcow" style="margin-top: 20px;">
+                                <div class="setting-item"
+                                    style="border-bottom: 1px solid var(--border); padding-bottom: 10px;">
+                                    <div class="setting-label">
+                                        <span style="font-weight: 600;">Use Mailcow</span>
+                                        <span class="setting-description">Generate emails using your own Mailcow
+                                            server</span>
+                                    </div>
+                                    <div class="setting-control">
+                                        <label class="toggle">
+                                            <input type="checkbox" id="settings-email-mailcow-enabled">
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="setting-item">
+                                    <div class="setting-label">
+                                        <span>Mailcow Host URL</span>
+                                        <span class="setting-description">The URL of your Mailcow server (e.g.
+                                            https://mail.example.com)</span>
+                                    </div>
+                                    <div class="setting-control">
+                                        <input type="text" id="settings-email-mailcow-host"
+                                            placeholder="https://mail.example.com">
+                                    </div>
+                                </div>
+                                <div class="setting-item">
+                                    <div class="setting-label">
+                                        <span>Mailcow API Key</span>
+                                        <span class="setting-description">API key with domain administrator
+                                            permissions</span>
+                                    </div>
+                                    <div class="setting-control">
+                                        <input type="text" id="settings-email-mailcow-key"
+                                            placeholder="Enter Mailcow API key">
+                                    </div>
+                                </div>
+                                <div class="setting-item">
+                                    <div class="setting-label">
+                                        <span>Mailcow Domain</span>
+                                        <span class="setting-description">The domain to create email accounts on</span>
+                                    </div>
+                                    <div class="setting-control">
+                                        <input type="text" id="settings-email-mailcow-domain"
+                                            placeholder="e.g. revoxy.shop">
+                                    </div>
+                                </div>
+                                <div class="setting-item"
+                                    style="border-bottom: none; justify-content: flex-start; gap: 12px;">
+                                    <button class="mailcow-check-btn" id="mailcow-check-btn"
+                                        onclick="checkMailcowApi()">
+                                        <span class="mailcow-check-icon"></span> Check API Access
+                                    </button>
+                                    <span class="mailcow-check-status" id="mailcow-check-status"></span>
+                                </div>
+                            </div>
+
+                            <!-- Hotmail007 Provider -->
+                            <div class="provider-box" id="provider-hotmail007" style="margin-top: 20px;">
+                                <div class="setting-item"
+                                    style="border-bottom: 1px solid var(--border); padding-bottom: 10px;">
+                                    <div class="setting-label">
+                                        <span style="font-weight: 600;">Use Hotmail007</span>
+                                        <span class="setting-description">Purchase Hotmail/Outlook accounts from
+                                            hotmail007.com</span>
+                                    </div>
+                                    <div class="setting-control">
+                                        <label class="toggle">
+                                            <input type="checkbox" id="settings-email-hotmail007-enabled">
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="setting-item">
+                                    <div class="setting-label">
+                                        <span>Hotmail007 API Key</span>
+                                        <span class="setting-description">API key for Hotmail007 account purchase
+                                            service</span>
+                                    </div>
+                                    <div class="setting-control">
+                                        <input type="text" id="settings-email-hotmail007-key"
+                                            placeholder="Enter Hotmail007 API key">
+                                    </div>
+                                </div>
+                                <div class="setting-item">
+                                    <div class="setting-label">
+                                        <span>Account Type</span>
+                                        <span class="setting-description">Select which type of account to
+                                            purchase from Hotmail007</span>
+                                    </div>
+                                    <div class="setting-control">
+                                        <select id="settings-email-hotmail007-type">
+                                            <!-- Short-term (1-3 hours) -->
+                                            <option value="hotmail">Hotmail — Basic (1-3h)</option>
+                                            <option value="outlook">Outlook — Basic (1-3h)</option>
+                                            <option value="hotmail_premium">Hotmail Premium — Graph+Backup (1-3h)</option>
+                                            <option value="outlook_premium">Outlook Premium — Graph+Backup (1-3h)</option>
+                                            
+                                            <!-- Trusted Graph API (3 months+) -->
+                                            <option value="hotmail_trusted_graph">Hotmail Trusted Graph — Graph API only (3mo+)</option>
+                                            <option value="outlook_trusted_graph">Outlook Trusted Graph — Graph API only (3mo+)</option>
+                                            
+                                            <!-- Long-term IMAP + Graph (3 months) -->
+                                            <option value="hotmail_imap">Hotmail IMAP — Long-term IMAP+Graph (3mo)</option>
+                                            <option value="outlook_imap">Outlook IMAP — Long-term IMAP+Graph (3mo)</option>
+                                            
+                                            <!-- Long-term mixed (few months) -->
+                                            <option value="hotmail_longterm">Hotmail Long-term — IMAP+Graph (few mo)</option>
+                                            <option value="outlook_longterm">Outlook Long-term — IMAP+Graph (few mo)</option>
+                                            
+                                            <!-- Legacy aliases (for compatibility) -->
+                                            <option value="hotmail_trusted">Hotmail Trusted (legacy alias → Trusted Graph)</option>
+                                            <option value="outlook_trusted">Outlook Trusted (legacy alias → Trusted Graph)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="setting-item"
+                                    style="border-bottom: none; justify-content: flex-start; gap: 12px;">
+                                    <button class="mailcow-check-btn" id="hotmail007-check-btn"
+                                        onclick="checkHotmail007Api()">
+                                        Check API Key
+                                    </button>
+                                    <button class="mailcow-check-btn" id="hotmail007-refresh-btn"
+                                        onclick="refreshHotmail007Products()">
+                                        Refresh Products
+                                    </button>
+                                    <span class="mailcow-check-status" id="hotmail007-check-status"></span>
+                                </div>
+                            </div>
+
+                            <!-- Lution Provider -->
+                            <div class="provider-box" id="provider-lution" style="margin-top: 20px;">
+                                <div class="setting-item"
+                                    style="border-bottom: 1px solid var(--border); padding-bottom: 10px;">
+                                    <div class="setting-label">
+                                        <span style="font-weight: 600;">Use Lution</span>
+                                        <span class="setting-description">Purchase Hotmail/Outlook accounts from
+                                            lution.ee
+                                            (supports new, trusted, and graph accounts)</span>
+                                    </div>
+                                    <div class="setting-control">
+                                        <label class="toggle">
+                                            <input type="checkbox" id="settings-email-lution-enabled">
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="setting-item">
+                                    <div class="setting-label">
+                                        <span>Lution API Key</span>
+                                        <span class="setting-description">API key for Lution account purchase
+                                            service</span>
+                                    </div>
+                                    <div class="setting-control">
+                                        <input type="text" id="settings-email-lution-key"
+                                            placeholder="Enter Lution API key">
+                                    </div>
+                                </div>
+                                <div class="setting-item">
+                                    <div class="setting-label">
+                                        <span>Account Type</span>
+                                        <span class="setting-description">Select which type of account to purchase from Lution (check lution.ee for current pricing)</span>
+                                    </div>
+                                    <div class="setting-control">
+                                        <select id="settings-email-lution-type">
+                                            <!-- Basic accounts -->
+                                            <option value="hotmail">Hotmail — Basic</option>
+                                            <option value="outlook">Outlook — Basic</option>
+                                            
+                                            <!-- Trusted accounts with IMAP + Graph -->
+                                            <option value="hotmail_trusted">Hotmail Trusted — IMAP + Graph API (3-6mo)</option>
+                                            <option value="outlook_trusted">Outlook Trusted — IMAP + Graph API (3-6mo)</option>
+                                            
+                                            <!-- Trusted accounts with Graph only -->
+                                            <option value="hotmail_trusted_graph">Hotmail Trusted — Graph API only (3-6mo)</option>
+                                            <option value="outlook_trusted_graph">Outlook Trusted — Graph API only (3-6mo)</option>
+                                            
+                                            <!-- SMTP accounts -->
+                                            <option value="hotmail_smtp">Hotmail SMTP — SMTP access</option>
+                                            <option value="outlook_smtp">Outlook SMTP — SMTP access</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="setting-item"
+                                    style="border-bottom: none; justify-content: flex-start; gap: 12px;">
+                                    <button class="mailcow-check-btn" id="lution-check-btn" onclick="checkLutionApi()">
+                                        Check API Key
+                                    </button>
+                                    <span class="mailcow-check-status" id="lution-check-status"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-section">
+                            <h2>Webhook Notifications</h2>
+                            <p class="setting-description" style="margin-bottom:15px;color:var(--text-secondary);">Send
+                                a Discord embed to your webhook after each token is successfully generated. Token is
+                                shown partially for safety.</p>
+                            <div class="setting-item">
+                                <div class="setting-label">
+                                    <span>Enable Webhook</span>
+                                    <span class="setting-description">Trigger embed after each new token creation</span>
+                                </div>
+                                <div class="setting-control">
+                                    <label class="toggle">
+                                        <input type="checkbox" id="settings-webhook-enabled">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="setting-item">
+                                <div class="setting-label">
+                                    <span>Webhook URL</span>
+                                    <span class="setting-description">Discord webhook URL to receive token
+                                        notifications</span>
+                                </div>
+                                <div class="setting-control">
+                                    <input type="text" id="settings-webhook-url"
+                                        placeholder="https://discord.com/api/webhooks/...">
+                                </div>
+                            </div>
+                            <div class="setting-item">
+                                <div class="setting-label">
+                                    <span>Notify on All Results</span>
+                                    <span class="setting-description">Also send embeds for failed attempts (Invalid,
+                                        Locked, etc.) — by default only valid tokens trigger a notification</span>
+                                </div>
+                                <div class="setting-control">
+                                    <label class="toggle">
+                                        <input type="checkbox" id="settings-webhook-notify-all">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="setting-item" style="border-bottom:none;">
+                                <div class="setting-label">
+                                    <span>Test Webhook</span>
+                                    <span class="setting-description">Send a test embed to verify your webhook is
+                                        working</span>
+                                </div>
+                                <div class="setting-control">
+                                    <button class="secondary-btn" id="test-webhook-btn" onclick="testWebhook()"
+                                        style="min-width:130px;">
+                                        Send Test
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="tab-content" id="terminal-tab">
+                    <div class="card log-card">
+                        <h2>Activity Log</h2>
+                        <div class="log-container" id="log-container">
+                        </div>
+                        <button id="clear-log-btn" class="secondary-btn" onclick="clearLogs()">Clear Log</button>
+                    </div>
+
+                    <div class="card status-card">
+                        <h2>Output Files</h2>
+                        <div class="output-files-grid">
+                            <div class="output-file-item" onclick="openOutputFile('tokens.txt')">
+                                <span>tokens.txt</span>
+                            </div>
+                            <div class="output-file-item" onclick="openOutputFile('checked_valid.txt')">
+                                <span>checked_valid.txt</span>
+                            </div>
+                            <div class="output-file-item" onclick="openOutputFile('checked_invalid.txt')">
+                                <span>checked_invalid.txt</span>
+                            </div>
+                            <div class="output-file-item" onclick="openOutputFile('locked.txt')">
+                                <span>locked.txt</span>
+                            </div>
+                            <div class="output-file-item" onclick="openOutputFile('humanized.txt')">
+                                <span>humanized.txt</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ═══════════════════ PHONE VERIFY TAB ═══════════════════ -->
+                <div class="tab-content" id="phone-verify-tab">
+                    <div style="background: rgba(255, 170, 0, 0.08); border: 1px solid rgba(255, 170, 0, 0.25); border-radius: 10px; padding: 14px 18px; margin-bottom: 18px; display: flex; align-items: flex-start; gap: 12px;">
+                        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#ffaa00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0; margin-top:2px;">
+                            <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                            <line x1="12" y1="9" x2="12" y2="13"/>
+                            <line x1="12" y1="17" x2="12.01" y2="17"/>
+                        </svg>
+                        <div>
+                            <div style="color: #ffaa00; font-weight: 600; font-size: 13px; margin-bottom: 4px;">Untested Feature</div>
+                            <div style="color: var(--text-light); font-size: 12px; line-height: 1.5;">This feature is untested and there might be issues. Please report any issues you find to us so we can fix them.</div>
+                        </div>
+                    </div>
+                    <div class="content-row">
+                        <div class="card">
+                            <h2 style="display:flex;align-items:center;gap:10px;">
+                                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--primary);">
+                                    <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
+                                    <line x1="12" y1="18" x2="12.01" y2="18" />
+                                </svg>
+                                Phone Verification
+                            </h2>
+                            <p class="setting-description" style="margin-bottom:16px;">
+                                Verify Discord tokens with a phone number using SMS services. Supports API-only or browser-based verification.
+                            </p>
+
+                            <!-- Mode Selector -->
+                            <div class="setting-item vertical">
+                                <div class="setting-label">
+                                    <span>Verification Mode</span>
+                                    <span class="setting-description">API-only uses Discord API directly. Browser opens a browser session.</span>
+                                </div>
+                                <div class="setting-control">
+                                    <select id="pv-mode" style="width:100%;">
+                                        <option value="api">API Only (Recommended)</option>
+                                        <option value="browser">Browser Based</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Provider Selector -->
+                            <div class="setting-item vertical">
+                                <div class="setting-label">
+                                    <span>SMS Provider</span>
+                                    <span class="setting-description">Select your SMS service for phone numbers</span>
+                                </div>
+                                <div class="setting-control">
+                                    <select id="pv-provider" onchange="pvSwitchProvider()" style="width:100%;">
+                                        <option value="fivesim">5sim.net</option>
+                                        <option value="onlinesim">OnlineSim.io</option>
+                                        <option value="hero_sms">Hero SMS (cheapest)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- 5sim Config -->
+                            <div class="pv-provider-config" id="pv-config-fivesim" style="display:block;">
+                                <div class="setting-item vertical">
+                                    <div class="setting-label">
+                                        <span>5sim API Key</span>
+                                        <span class="setting-description">Get your key from <a href="https://5sim.net" target="_blank" style="color:var(--primary);">5sim.net</a></span>
+                                    </div>
+                                    <div class="setting-control">
+                                        <input type="password" id="pv-fivesim-key" placeholder="Enter your 5sim API key..." autocomplete="off">
+                                    </div>
+                                </div>
+                                <div class="setting-item vertical">
+                                    <div class="setting-label">
+                                        <span>Country</span>
+                                        <span class="setting-description">Country for phone numbers (use country name, e.g. "russia", "usa", or "any")</span>
+                                    </div>
+                                    <div class="setting-control">
+                                        <input type="text" id="pv-fivesim-country" value="any" placeholder="any">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- OnlineSim Config -->
+                            <div class="pv-provider-config" id="pv-config-onlinesim" style="display:none;">
+                                <div class="setting-item vertical">
+                                    <div class="setting-label">
+                                        <span>OnlineSim API Key</span>
+                                        <span class="setting-description">Get your key from <a href="https://onlinesim.io" target="_blank" style="color:var(--primary);">onlinesim.io</a> → Profile tab</span>
+                                    </div>
+                                    <div class="setting-control">
+                                        <input type="password" id="pv-onlinesim-key" placeholder="Enter your OnlineSim API key..." autocomplete="off">
+                                    </div>
+                                </div>
+                                <div class="setting-item vertical">
+                                    <div class="setting-label">
+                                        <span>Country Code</span>
+                                        <span class="setting-description">E.164 code without "+" (e.g. "7" for Russia, "44" for UK, "1" for US)</span>
+                                    </div>
+                                    <div class="setting-control">
+                                        <input type="text" id="pv-onlinesim-country" value="7" placeholder="7">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Hero SMS Config -->
+                            <div class="pv-provider-config" id="pv-config-hero_sms" style="display:none;">
+                                <div class="setting-item vertical">
+                                    <div class="setting-label">
+                                        <span>Hero SMS API Key</span>
+                                        <span class="setting-description">Get your key from <a href="https://hero-sms.com" target="_blank" style="color:var(--primary);">hero-sms.com</a> → API section</span>
+                                    </div>
+                                    <div class="setting-control">
+                                        <input type="password" id="pv-hero_sms-key" placeholder="Enter your Hero SMS API key..." autocomplete="off">
+                                    </div>
+                                </div>
+                                <div class="setting-item vertical">
+                                    <div class="setting-label">
+                                        <span>Country ID</span>
+                                        <span class="setting-description">Numeric country ID (e.g. 62 = Indonesia, 0 = any)</span>
+                                    </div>
+                                    <div class="setting-control">
+                                        <input type="text" id="pv-hero_sms-country" value="62" placeholder="62">
+                                    </div>
+                                </div>
+                                <div class="setting-item vertical">
+                                    <div class="setting-label">
+                                        <span>Max Price ($)</span>
+                                        <span class="setting-description">Max price per number. 0 = no limit</span>
+                                    </div>
+                                    <div class="setting-control">
+                                        <input type="text" id="pv-hero_sms-maxprice" value="0.01" placeholder="0.01">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Balance Check -->
+                            <div class="setting-item" style="border-bottom:none;">
+                                <div class="setting-label">
+                                    <span>Provider Balance</span>
+                                    <span class="setting-description" id="pv-balance-display">—</span>
+                                </div>
+                                <div class="setting-control">
+                                    <button class="secondary-btn" id="pv-check-balance-btn" onclick="pvCheckBalance()" style="font-size:12px;padding:6px 14px;">Check Balance</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Status Card -->
+                        <div class="card status-card">
+                            <h2>Verification Status</h2>
+                            <div class="progress-container">
+                                <div class="progress-bar">
+                                    <div class="progress" id="pv-progress" style="width: 0%"></div>
+                                </div>
+                                <div class="progress-text" id="pv-progress-text">0/0</div>
+                            </div>
+                            <div class="stats">
+                                <div class="stat-item">
+                                    <span class="stat-value success-text" id="pv-success">0</span>
+                                    <span class="stat-label">Verified</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-value error-text" id="pv-failed">0</span>
+                                    <span class="stat-label">Failed</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-value" style="color: var(--warning);" id="pv-pending">0</span>
+                                    <span class="stat-label">Pending</span>
+                                </div>
+                            </div>
+                            <div id="pv-status-msg" style="margin-top:14px; font-size:12px; color:var(--text-light); min-height:18px;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Token Input Area -->
+                    <div class="content-row" style="margin-top:20px;">
+                        <div class="card">
+                            <h2>Tokens to Verify</h2>
+                            <p class="setting-description" style="margin-bottom:10px;">Paste tokens or upload a file. Supports <code>email:password:token</code> or raw token format.</p>
+                            <div class="drag-drop-area" id="pv-drag-area">
+                                <div class="drag-drop-content">
+                                    <div class="upload-icon">+</div>
+                                    <span>Drag &amp; Drop Tokens File or Click to Upload</span>
+                                    <input type="file" id="pv-file" accept=".txt" class="file-input">
+                                </div>
+                                <div class="file-info" id="pv-file-info">No file selected</div>
+                            </div>
+                            <div class="input-group">
+                                <label for="pv-textarea">Or Paste Tokens (one per line)</label>
+                                <textarea id="pv-textarea" placeholder="Enter tokens here...
+Format: email:password:token or just token"></textarea>
+                            </div>
+                            <div class="actions">
+                                <button id="pv-start-btn" class="primary-btn" onclick="startPhoneVerify()">Start Verification</button>
+                                <button id="pv-stop-btn" class="secondary-btn" disabled onclick="stopPhoneVerify()">Stop</button>
+                                <button id="pv-clear-btn" class="secondary-btn" onclick="clearPhoneVerify()">Clear</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- ═══════════════════ VERSION HISTORY TAB ═══════════════════ -->
+                <div id="version-history-tab" class="tab-content">
+                    <div class="content-header">
+                        <h1>Version History</h1>
+                        <p>Track what's new, fixed, and improved in FluxMart.</p>
+                    </div>
+
+                    <div class="content-body" style="padding-bottom: 20px;">
+                        <div class="card" style="max-width: 900px; margin: 0 auto;">
+                            <div class="version-block">
+                                <h2
+                                    style="margin-bottom: 15px; color: var(--text-primary); border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
+                                    What's New</h2>
+
+                                <!-- Version 3.3.4 -->
+                                <div class="version-item" style="margin-bottom: 25px;">
+                                    <h3
+                                        style="color: var(--primary); font-size: 16px; margin-bottom: 10px; display: flex; align-items: center;">
+                                        Version 3.3.4 <span
+                                            style="font-size: 10px; font-weight: bold; background: var(--primary); color: #000; padding: 2px 6px; border-radius: 4px; margin-left: 8px; text-transform: uppercase;">Latest</span>
+                                    </h3>
+
+
+                                </div>
+
+                                <!-- Version 3.3.3 -->
+                                <div class="version-item" style="margin-bottom: 25px;">
+                                    <h3
+                                        style="color: var(--primary); font-size: 16px; margin-bottom: 10px; display: flex; align-items: center;">
+                                        Version 3.3.3
+                                    </h3>
+
+                                    <h4 style="color: #4caf50; font-size: 13.5px; margin: 12px 0 6px 0;">Fixes</h4>
+                                    <ul
+                                        style="color: var(--text-secondary); font-size: 13px; line-height: 1.6; padding-left: 20px; margin-bottom: 15px;">
+                                        <li>Fixed <strong>Stop button</strong> not working for Chromium and Brave browsers — generation now stops immediately when you press Stop</li>
+                                        <li>Fixed <strong>DuckMail verification</strong> — verification link now correctly opens the verify page instead of redirecting to discord.com</li>
+                                        <li>Fixed <strong>email verification detection</strong> — the tool now correctly recognizes when verification is complete after captcha is solved</li>
+                                        <li>Fixed <strong>captcha loop detection</strong> not triggering properly — endless captcha loops are now detected and handled correctly</li>
+                                        <li>Fixed <strong>Speed/TPH calculation</strong> — tokens per hour now accurately reflects actual generation speed</li>
+                                    </ul>
+
+                                    <h4 style="color: var(--primary); font-size: 13.5px; margin: 12px 0 6px 0;">Improved</h4>
+                                    <ul
+                                        style="color: var(--text-secondary); font-size: 13px; line-height: 1.6; padding-left: 20px; margin-bottom: 15px;">
+                                        <li>Improved <strong>email verification speed</strong> — faster inbox polling and quicker link detection</li>
+                                        <li>Improved <strong>overall stability</strong> — better error handling and thread safety across the entire tool</li>
+                                        <li>Improved <strong>Brave browser stealth</strong> — reduced account flagging with better fingerprint masking</li>
+                                        <li>Updated <strong>generator icon</strong> in the sidebar navigation</li>
+                                    </ul>
+                                </div>
+
+                                <!-- Version 3.3.2 -->
+                                <div class="version-item" style="margin-bottom: 25px;">
+                                    <h3
+                                        style="color: var(--primary); font-size: 16px; margin-bottom: 10px; display: flex; align-items: center;">
+                                        Version 3.3.2
+                                    </h3>
+
+                                    <h4 style="color: #4caf50; font-size: 13.5px; margin: 12px 0 6px 0;">Fixes</h4>
+                                    <ul
+                                        style="color: var(--text-secondary); font-size: 13px; line-height: 1.6; padding-left: 20px; margin-bottom: 15px;">
+                                        <li>Fixed Camoufox</li>
+                                        <li>Fixed token manager bug</li>
+                                        <li>Fixed custom fingerprint at token manager</li>
+                                    </ul>
+
+                                    <h4 style="color: var(--primary); font-size: 13.5px; margin: 12px 0 6px 0;">Added</h4>
+                                    <ul
+                                        style="color: var(--text-secondary); font-size: 13px; line-height: 1.6; padding-left: 20px; margin-bottom: 15px;">
+                                        <li>Added <strong>Windows Manager</strong> toggle to automatically grid multi-threaded browser windows (Brave, Chromium, Camoufox)</li>
+                                        <li>Added real username generation</li>
+                                        <li>Added auto updater</li>
+                                    </ul>
+
+                                    <h4 style="color: #2196f3; font-size: 13.5px; margin: 12px 0 6px 0;">Improved</h4>
+                                    <ul
+                                        style="color: var(--text-secondary); font-size: 13px; line-height: 1.6; padding-left: 20px; margin-bottom: 15px;">
+                                        <li>Improved Camoufox</li>
+                                    </ul>
+
+                                    <h4 style="color: #f44336; font-size: 13.5px; margin: 12px 0 6px 0;">Removed</h4>
+                                    <ul
+                                        style="color: var(--text-secondary); font-size: 13px; line-height: 1.6; padding-left: 20px; margin-bottom: 15px;">
+                                        <li>Removed legacy VPN manager files: <strong>Windscribe</strong> and <strong>Mysterium</strong></li>
+                                        <li>Removed <strong>Token Verify</strong> toggle from UI (email verification is now always enabled)</li>
+                                        <li>Removed Thread capability text and renamed UI to <strong>Threads</strong></li>
+                                    </ul>
+                                </div>
+
+                                <!-- Version 3.3.0 -->
+                                <div class="version-item" style="margin-bottom: 25px;">
+                                    <h3
+                                        style="color: var(--primary); font-size: 16px; margin-bottom: 10px; display: flex; align-items: center;">
+                                        Version 3.3.0
+                                    </h3>
+
+                                    <h4 style="color: #4caf50; font-size: 13.5px; margin: 12px 0 6px 0;">Fixes</h4>
+                                    <ul
+                                        style="color: var(--text-secondary); font-size: 13px; line-height: 1.6; padding-left: 20px; margin-bottom: 15px;">
+                                        <li>Fixed rate limit checker: no longer triggers rate limits when checking, now
+                                            uses a passive detection method via Discord's read-only endpoints</li>
+                                        <li>Fixed Groq AI model name from <code
+                                                style="background: rgba(255,255,255,0.1); padding: 1px 4px; border-radius: 3px;">gpt-oss-120b</code>
+                                            to <code
+                                                style="background: rgba(255,255,255,0.1); padding: 1px 4px; border-radius: 3px;">openai/gpt-oss-120b</code>
+                                            across all files</li>
+
+                                        <li>Fixed <code
+                                                style="background: rgba(255,255,255,0.1); padding: 1px 4px; border-radius: 3px;">window.toast</code>
+                                            compatibility: existing toast calls now work with the new notification
+                                            system</li>
+                                        <li>Fixed container display mode: changed from <code
+                                                style="background: rgba(255,255,255,0.1); padding: 1px 4px; border-radius: 3px;">block</code>
+                                            to <code
+                                                style="background: rgba(255,255,255,0.1); padding: 1px 4px; border-radius: 3px;">flex</code>
+                                            for proper sidebar layout rendering</li>
+                                        <li>Fixed animations.css corruption from CRLF/LF mismatches</li>
+                                        <li>Fixed dashboard session counter: now tracks all tokens (valid + locked +
+                                            invalid), not just valid</li>
+                                        <li>Fixed status bar "Workers" label: renamed to "Running" and now shows actual
+                                            active thread count</li>
+                                    </ul>
+
+                                    <h4 style="color: var(--primary); font-size: 13.5px; margin: 12px 0 6px 0;">Added
+                                    </h4>
+                                    <ul
+                                        style="color: var(--text-secondary); font-size: 13px; line-height: 1.6; padding-left: 20px; margin-bottom: 15px;">
+                                        <li>Added <strong>sidebar navigation</strong> with SVG icons: replaces the old
+                                            top tab bar for a desktop-class layout</li>
+                                        <li>Added <strong>collapsible sidebar</strong> with state saved between sessions
+                                            via localStorage</li>
+                                        <li>Added <strong>keyboard shortcuts</strong>: Ctrl+1 to Ctrl+7 to switch tabs,
+                                            Ctrl+G to start generating, Ctrl+B to collapse sidebar</li>
+                                        <li>Added <strong>statistics dashboard</strong> on Generator tab: shows Total
+                                            Generated, Success Rate, Speed (tokens/hour), and Session count in real-time
+                                        </li>
+                                        <li>Added <strong>toast notifications</strong>: animated popups that slide in
+                                            from the bottom-right with auto-dismiss progress bar (success, error,
+                                            warning, info variants)</li>
+                                        <li>Added <strong>status bar</strong> at the bottom: shows connection status
+                                            (green/red dot), running thread count, rate limit status, and version number
+                                        </li>
+                                        <li>Added <strong>glassmorphism</strong> (backdrop-filter blur) to cards and
+                                            settings sections</li>
+                                        <li>Added <strong>skeleton loading</strong> CSS classes for future use</li>
+                                        <li>Added <strong>Check Key</strong> button for Groq API key validation</li>
+
+                                        <li>Added <strong>Check Key</strong> button for OpenRouter API key validation
+                                        </li>
+                                        <li>Added backend <code
+                                                style="background: rgba(255,255,255,0.1); padding: 1px 4px; border-radius: 3px;">check_openrouter_api()</code>
+                                            Python method in gui_controller.py</li>
+                                        <li>Added drag-prevention support for new sidebar and nav-item elements</li>
+                                        <li>Added <code
+                                                style="background: rgba(255,255,255,0.1); padding: 1px 4px; border-radius: 3px;">window.toast</code>
+                                            compatibility shim so existing code works with new toast system</li>
+                                    </ul>
+
+                                    <h4 style="color: #2196f3; font-size: 13.5px; margin: 12px 0 6px 0;">Improved</h4>
+                                    <ul
+                                        style="color: var(--text-secondary); font-size: 13px; line-height: 1.6; padding-left: 20px; margin-bottom: 15px;">
+                                        <li>Improved overall layout from top-tab navigation to a professional
+                                            <strong>sidebar + main content</strong> flexbox structure</li>
+                                        <li>Improved tab navigation bar: centered tabs, refined active indicator
+                                            (proportional white underline bar)</li>
+                                        <li>Improved cards with hover border effects and subtle gradient overlays</li>
+                                        <li>Improved progress bars: slimmer 6px design with smoother gradients</li>
+                                        <li>Improved settings sections with backdrop-filter blur effect</li>
+                                        <li>Improved API key inputs: changed from <code
+                                                style="background: rgba(255,255,255,0.1); padding: 1px 4px; border-radius: 3px;">type="text"</code>
+                                            to <code
+                                                style="background: rgba(255,255,255,0.1); padding: 1px 4px; border-radius: 3px;">type="password"</code>
+                                            for security</li>
+                                        <li>Improved version from v3.2.9 to <strong>v3.3.0</strong></li>
+                                    </ul>
+
+                                    <h4 style="color: #f44336; font-size: 13.5px; margin: 12px 0 6px 0;">Removed</h4>
+                                    <ul
+                                        style="color: var(--text-secondary); font-size: 13px; line-height: 1.6; padding-left: 20px; margin-bottom: 15px;">
+                                        <li>Removed <strong>AI Image Solver</strong>: full removal from frontend (HTML,
+                                            CSS), JavaScript (settings.js), backend (gui_controller.py), config.json,
+                                            and all workflow files (discord_register.py, discord_register_brave.py,
+                                            discord_register_chromium.py, mail.py)</li>
+                                        <li>Removed <code
+                                                style="background: rgba(255,255,255,0.1); padding: 1px 4px; border-radius: 3px;">vision_solver.py</code>
+                                            and <code
+                                                style="background: rgba(255,255,255,0.1); padding: 1px 4px; border-radius: 3px;">vision_solver_truedriver.py</code>
+                                            files entirely</li>
+                                        <li>Removed old top tab navigation bar</li>
+                                        <li>Removed scroll arrow buttons that were not functional</li>
+                                        <li>Removed old footer: version now shown in status bar</li>
+                                        <li>Removed <code
+                                                style="background: rgba(255,255,255,0.1); padding: 1px 4px; border-radius: 3px;">ai_image_solver</code>
+                                            mutual exclusion logic from save_settings</li>
+                                        <li>Removed image solver branching from captcha solving flow in all browser
+                                            methods (Camoufox, Brave, Chromium)</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- ═══════════════════ /VERSION HISTORY TAB ═══════════════════ -->
+
+                <!-- ═══════════════════ COPYRIGHT FOOTER ═══════════════════ -->
+                <div style="text-align:center; padding:20px 0 14px 0; color:#444; font-size:11px; letter-spacing:.3px;">
+                    © 2026 FluxMart - All Rights Reserved
+                </div>
+
+            </div> <!-- /.main-scroll -->
+
+            <!-- ═══════════════════ STATUS BAR ═══════════════════ -->
+            <div class="status-bar" id="app-statusbar">
+                <div class="status-bar-left">
+                    <div class="status-item">
+                        <span class="status-dot online" id="status-connection"></span>
+                        <span id="status-connection-text">Ready</span>
+                    </div>
+                    <div class="status-divider"></div>
+                    <div class="status-item">
+                        <span id="status-workers">Running: 0</span>
+                    </div>
+                    <div class="status-divider"></div>
+                    <div class="status-item">
+                        <span id="status-ratelimit">Rate Limit: OK</span>
+                    </div>
+                </div>
+                <div class="status-bar-right">
+                    <span class="status-version">v3.3.4</span>
+                </div>
+            </div>
+
+        </div> <!-- /.main-content -->
+
+    </div> <!-- /.container.app-layout -->
+
+    <script src="/static/js/toast.js"></script>
+    <script src="/static/js/backend.js"></script>
+    <script src="/static/js/utils.js"></script>
+    <script src="/static/js/login.js"></script>
+    <script src="/static/js/loading.js"></script>
+    <script src="/static/js/sidebar.js"></script>
+    <script src="/static/js/tabs.js"></script>
+    <script src="/static/js/settings.js"></script>
+    <script src="/static/js/dragdrop.js"></script>
+    <script src="/static/js/generator.js"></script>
+    <script src="/static/js/checker.js"></script>
+    <script src="/static/js/splitter.js"></script>
+    <script src="/static/js/humanizer.js"></script>
+    <script src="/static/js/token_manager.js"></script>
+    <script src="/static/js/installer.js"></script>
+    <script src="/static/js/phone-verify.js"></script>
+
+    <!-- Custom confirm modal (replaces browser confirm) -->
+    <div id="msk-confirm-overlay"
+        style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.65);backdrop-filter:blur(4px);align-items:center;justify-content:center;"
+        hidden>
+        <div
+            style="background:#1e1f22;border:1px solid #2f3136;border-radius:10px;padding:28px 32px;min-width:320px;max-width:440px;box-shadow:0 8px 40px #0008;">
+            <div id="msk-confirm-title" style="font-size:15px;font-weight:600;color:#f2f3f5;margin-bottom:10px;"></div>
+            <div id="msk-confirm-body" style="font-size:13px;color:#949ba4;line-height:1.6;margin-bottom:22px;"></div>
+            <div style="display:flex;gap:10px;justify-content:flex-end;">
+                <button id="msk-confirm-cancel"
+                    style="background:#383a40;border:none;border-radius:6px;color:#b9bbbe;padding:8px 20px;font-size:13px;cursor:pointer;font-family:inherit;">Cancel</button>
+                <button id="msk-confirm-ok"
+                    style="background:#da373c;border:none;border-radius:6px;color:#fff;padding:8px 20px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;">Delete</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        function mskConfirm(title, body, okLabel) {
+            return new Promise(resolve => {
+                const overlay = document.getElementById('msk-confirm-overlay');
+                document.getElementById('msk-confirm-title').textContent = title;
+                document.getElementById('msk-confirm-body').textContent = body;
+                const okBtn = document.getElementById('msk-confirm-ok');
+                if (okLabel) okBtn.textContent = okLabel;
+                overlay.hidden = false;
+                overlay.style.display = 'flex';
+                const cleanup = (val) => {
+                    overlay.hidden = true;
+                    overlay.style.display = 'none';
+                    okBtn.onclick = null;
+                    document.getElementById('msk-confirm-cancel').onclick = null;
+                    resolve(val);
+                };
+                okBtn.onclick = () => cleanup(true);
+                document.getElementById('msk-confirm-cancel').onclick = () => cleanup(false);
+            });
+        }
+        window.mskConfirm = mskConfirm;
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,100 @@
+.window-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  -webkit-app-region: no-drag;
+}
+
+#drag-bar {
+  height: 10px;
+  flex-grow: 1;
+  cursor: default;
+}
+
+.window-buttons {
+  display: flex;
+  gap: 8px;
+  -webkit-app-region: no-drag;
+}
+
+/* ── macOS-style traffic lights ─────────────────────────────── */
+.window-btn {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  -webkit-app-region: no-drag;
+  transition: filter 0.15s ease, transform 0.1s ease;
+  flex-shrink: 0;
+  /* Symbol icon hidden by default, shown on hover */
+}
+
+.window-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8px;
+  font-weight: 700;
+  line-height: 14px;
+  text-align: center;
+}
+
+/* Show symbol on hover of button group */
+.window-controls:hover .window-btn::after {
+  opacity: 1;
+}
+
+.window-btn:hover {
+  filter: brightness(1.15);
+}
+
+.window-btn:active {
+  transform: scale(0.88);
+  filter: brightness(0.9);
+}
+
+/* Minimize — yellow */
+.minimize {
+  background-color: #febc2e;
+  box-shadow: 0 0 0 0.5px rgba(0,0,0,0.25) inset;
+}
+
+.minimize::after {
+  content: '−';
+  color: rgba(0,0,0,0.65);
+  font-size: 10px;
+  font-weight: 900;
+  line-height: 14px;
+  letter-spacing: -0.5px;
+}
+
+/* Close — red */
+.close {
+  background-color: #fe5f57;
+  box-shadow: 0 0 0 0.5px rgba(0,0,0,0.25) inset;
+}
+
+.close::after {
+  content: '✕';
+  color: rgba(0,0,0,0.65);
+  font-size: 8px;
+  font-weight: 900;
+  line-height: 14px;
+}
+
+/* Login overlay controls — identical sizing */
+.login-window-controls .window-btn {
+  width: 14px;
+  height: 14px;
+}

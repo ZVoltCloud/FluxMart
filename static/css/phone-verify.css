@@ -1,0 +1,328 @@
+/* ═══════════════════════════════════════════════
+   Phone Verify Page Styles
+═══════════════════════════════════════════════ */
+
+.pv-wrap {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 24px 20px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ── Hero header ── */
+.pv-hero {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 20px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 14px;
+}
+
+.pv-hero-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  background: rgba(88,101,242,0.15);
+  border: 1px solid rgba(88,101,242,0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #7c87f5;
+  flex-shrink: 0;
+}
+
+.pv-hero-text h2 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  margin: 0 0 3px;
+}
+
+.pv-hero-text p {
+  font-size: 12px;
+  color: rgba(255,255,255,0.4);
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* ── Provider selector ── */
+.pv-provider-selector {
+  display: flex;
+  gap: 10px;
+}
+
+.pv-provider-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 10px 12px;
+  background: rgba(255,255,255,0.03);
+  border: 1.5px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, transform 0.15s;
+  font-family: "Poppins", sans-serif;
+  -webkit-app-region: no-drag;
+}
+
+.pv-provider-btn:hover {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.15);
+}
+
+.pv-provider-btn.active {
+  background: rgba(88,101,242,0.1);
+  border-color: rgba(88,101,242,0.45);
+}
+
+.pv-provider-btn:active { transform: scale(0.98); }
+
+.pv-provider-logo {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.pv-logo-5sim    { background: #f5c518; }
+.pv-logo-smsman  { background: #1b1f8a; }
+.pv-logo-herosms { background: #6c5ce7; }
+
+.pv-provider-logo img,
+.pv-card-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 8px;
+  display: block;
+}
+
+.pv-provider-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.7);
+  letter-spacing: 0.2px;
+}
+
+.pv-provider-btn.active .pv-provider-name {
+  color: #fff;
+}
+
+.pv-provider-status {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  min-height: 14px;
+  color: rgba(255,255,255,0.35);
+}
+
+.pv-provider-btn.active .pv-provider-status {
+  color: #7c87f5;
+}
+
+/* ── Provider card ── */
+.pv-card {
+  background: rgba(255,255,255,0.025);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.pv-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  background: rgba(255,255,255,0.02);
+}
+
+.pv-card-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.pv-card-logo {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+
+.pv-toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pv-toggle-label {
+  font-size: 12px;
+  color: rgba(255,255,255,0.45);
+  font-weight: 500;
+}
+
+/* ── Fields area ── */
+.pv-fields {
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.pv-field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.pv-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pv-label {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.5);
+  letter-spacing: 0.3px;
+}
+
+.pv-input,
+.pv-select {
+  width: 100%;
+  padding: 9px 12px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  color: #fff;
+  font-family: "Poppins", sans-serif;
+  font-size: 12.5px;
+  outline: none;
+  transition: border-color 0.2s, background 0.2s;
+  box-sizing: border-box;
+  -webkit-app-region: no-drag;
+}
+
+.pv-input:focus,
+.pv-select:focus {
+  border-color: rgba(88,101,242,0.5);
+  background: rgba(255,255,255,0.07);
+}
+
+.pv-input::placeholder { color: rgba(255,255,255,0.25); }
+
+.pv-select option { background: #1a1b1f; color: #fff; }
+
+.pv-balance-box {
+  padding: 9px 12px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  min-height: 37px;
+}
+
+.pv-balance-val {
+  font-size: 14px;
+  font-weight: 700;
+  color: #22c55e;
+  letter-spacing: 0.3px;
+}
+
+/* ── Toggle option row ── */
+.pv-toggle-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  background: rgba(255,255,255,0.025);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 10px;
+  gap: 16px;
+}
+
+.pv-opt-title {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.8);
+  margin-bottom: 2px;
+}
+
+.pv-opt-desc {
+  display: block;
+  font-size: 11px;
+  color: rgba(255,255,255,0.35);
+  line-height: 1.4;
+}
+
+/* ── Cards grid (operator/service cards) ── */
+.pv-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 8px;
+}
+
+/* ── Footer (fetch button) ── */
+.pv-card-footer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  background: rgba(255,255,255,0.01);
+}
+
+.pv-fetch-btn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 16px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  color: rgba(255,255,255,0.8);
+  font-family: "Poppins", sans-serif;
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, transform 0.15s;
+  -webkit-app-region: no-drag;
+}
+
+.pv-fetch-btn:hover {
+  background: rgba(255,255,255,0.1);
+  border-color: rgba(255,255,255,0.2);
+  color: #fff;
+}
+
+.pv-fetch-btn:active { transform: scale(0.97); }
+
+.pv-fetch-status {
+  font-size: 12px;
+  color: rgba(255,255,255,0.45);
+}

@@ -1,0 +1,734 @@
+/* ═══════════════════ INSTALLER TAB
+   Refined glass-morph style — matches account / settings
+   ──────────────────────────────────────────────────── */
+
+.installer-container {
+    padding: 16px;
+    height: 100%;
+    overflow-y: auto;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+/* ─── Header bar ─── */
+.inst-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 0 4px;
+}
+
+.inst-header-title h2 {
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.85);
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    text-align: left;
+    margin: 0 0 3px;
+}
+
+.inst-header-title span {
+    font-size: 11.5px;
+    color: rgba(255,255,255,0.4);
+    letter-spacing: 0.1px;
+}
+
+.inst-header-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* ─── Generic installer button (glass-morph) ─── */
+.inst-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 14px;
+    border-radius: 9px;
+    font-size: 12px;
+    font-weight: 500;
+    font-family: "Poppins", sans-serif;
+    cursor: pointer;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.05);
+    color: rgba(255,255,255,0.8);
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    letter-spacing: 0.2px;
+}
+
+.inst-btn:hover:not(:disabled) {
+    background: rgba(255,255,255,0.09);
+    border-color: rgba(255,255,255,0.22);
+    color: #fff;
+}
+
+.inst-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.inst-btn-ghost {
+    background: rgba(255,255,255,0.04);
+    border-color: rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.7);
+}
+
+.inst-btn-ghost:hover:not(:disabled) {
+    background: rgba(255,255,255,0.08);
+    border-color: rgba(255,255,255,0.2);
+    color: #fff;
+}
+
+.inst-btn-primary {
+    background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(192,192,192,0.75));
+    border-color: rgba(255,255,255,0.4);
+    color: #0d0d0d;
+    font-weight: 600;
+}
+
+.inst-btn-primary:hover:not(:disabled) {
+    filter: brightness(1.08);
+    border-color: rgba(255,255,255,0.6);
+}
+
+.inst-btn-success {
+    background: rgba(76,175,80,0.08);
+    border-color: rgba(76,175,80,0.3);
+    color: var(--success);
+}
+
+.inst-btn-success:hover:not(:disabled) {
+    background: rgba(76,175,80,0.15);
+    border-color: rgba(76,175,80,0.5);
+    color: var(--success);
+}
+
+.inst-btn-admin {
+    background: rgba(255,193,7,0.06);
+    border-color: rgba(255,193,7,0.3);
+    color: var(--warning);
+}
+
+.inst-btn-admin:hover:not(:disabled) {
+    background: rgba(255,193,7,0.13);
+    border-color: rgba(255,193,7,0.5);
+    color: var(--warning);
+}
+
+/* ─── Two-column layout ─── */
+.inst-cols {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+}
+
+.inst-col-left {
+    flex: 1.1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.inst-col-right {
+    flex: 0.9;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+/* ─── Dep row ─── */
+.inst-dep-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    transition: background-color 0.18s ease;
+}
+
+.inst-dep-row:last-child {
+    border-bottom: none;
+}
+
+.inst-dep-row:hover {
+    background: rgba(255,255,255,0.025);
+}
+
+.inst-dep-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    box-shadow: 0 0 0 2px rgba(255,255,255,0.04);
+}
+
+.inst-dep-dot.ok   { background: var(--success); box-shadow: 0 0 6px rgba(76,175,80,0.45); }
+.inst-dep-dot.fail { background: var(--error); box-shadow: 0 0 6px rgba(244,67,54,0.45); }
+
+.inst-dep-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.inst-dep-name {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.88);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    letter-spacing: 0.1px;
+}
+
+.inst-dep-name.missing {
+    color: rgba(255,255,255,0.5);
+}
+
+.inst-dep-ver {
+    font-size: 10px;
+    color: rgba(255,255,255,0.4);
+    font-weight: 400;
+    letter-spacing: 0.3px;
+}
+
+.inst-dep-note {
+    font-size: 11px;
+    color: rgba(255,255,255,0.35);
+    margin-top: 2px;
+    letter-spacing: 0.1px;
+}
+
+.inst-dep-action .inst-btn {
+    padding: 4px 11px;
+    font-size: 11px;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+/* ─── Log panel ─── */
+.inst-log-box {
+    font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+    font-size: 11.5px;
+    color: rgba(255,255,255,0.65);
+    line-height: 1.7;
+    max-height: 140px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    padding: 12px 14px;
+    background: rgba(0,0,0,0.25);
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.04);
+}
+
+.inst-log-line.ok  { color: var(--success); }
+.inst-log-line.err { color: var(--error); }
+.inst-log-line.inf { color: rgba(255,255,255,0.55); }
+
+/* ─── Lock reasons ─── */
+.inst-lock-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 11px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.inst-lock-row:last-child {
+    border-bottom: none;
+}
+
+.inst-badge {
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 4px;
+    letter-spacing: 0.6px;
+    flex-shrink: 0;
+    margin-top: 2px;
+    text-transform: uppercase;
+}
+
+.inst-badge.high { background: rgba(244,67,54,0.12); color: var(--error); border: 1px solid rgba(244,67,54,0.25); }
+.inst-badge.med  { background: rgba(255,193,7,0.1);  color: var(--warning); border: 1px solid rgba(255,193,7,0.22); }
+.inst-badge.low  { background: rgba(76,175,80,0.1);  color: var(--success); border: 1px solid rgba(76,175,80,0.2); }
+.inst-badge.done { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.7); border: 1px solid rgba(255,255,255,0.12); }
+
+.inst-lock-title {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.85);
+    letter-spacing: 0.1px;
+}
+
+.inst-lock-desc {
+    font-size: 11px;
+    color: rgba(255,255,255,0.4);
+    margin-top: 2px;
+    line-height: 1.55;
+}
+
+/* ─── AI Chat (kept silver/dark — no purple AI vibes) ─── */
+.inst-ai-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-height: 220px;
+    max-height: 340px;
+}
+
+.inst-ai-msg {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    max-width: 88%;
+}
+
+.inst-ai-msg.user { align-self: flex-end; align-items: flex-end; }
+.inst-ai-msg.ai   { align-self: flex-start; align-items: flex-start; }
+
+.inst-ai-bubble {
+    padding: 9px 13px;
+    border-radius: 12px;
+    font-size: 12px;
+    line-height: 1.6;
+    word-break: break-word;
+    letter-spacing: 0.1px;
+}
+
+.inst-ai-msg.user .inst-ai-bubble {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.14);
+    color: rgba(255,255,255,0.92);
+    border-bottom-right-radius: 4px;
+}
+
+.inst-ai-msg.ai .inst-ai-bubble {
+    background: rgba(255,255,255,0.025);
+    border: 1px solid rgba(255,255,255,0.07);
+    color: rgba(255,255,255,0.82);
+    border-bottom-left-radius: 4px;
+}
+
+.inst-ai-who {
+    font-size: 10px;
+    color: rgba(255,255,255,0.3);
+    font-weight: 600;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+}
+
+.inst-ai-input-row {
+    display: flex;
+    gap: 8px;
+    padding: 11px 14px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    background: rgba(0,0,0,0.2);
+    border-radius: 0 0 14px 14px;
+}
+
+.inst-ai-input {
+    flex: 1;
+    background: rgba(0,0,0,0.35);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    color: rgba(255,255,255,0.9);
+    font-size: 12px;
+    font-family: "Poppins", sans-serif;
+    padding: 8px 12px;
+    outline: none;
+    resize: none;
+    min-height: 36px;
+    max-height: 80px;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.inst-ai-input:focus {
+    border-color: rgba(255,255,255,0.28);
+    background: rgba(0,0,0,0.45);
+}
+
+.inst-ai-send {
+    background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(192,192,192,0.78));
+    border: 1px solid rgba(255,255,255,0.4);
+    border-radius: 8px;
+    color: #0d0d0d;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 8px 14px;
+    cursor: pointer;
+    font-family: "Poppins", sans-serif;
+    transition: filter 0.2s ease, border-color 0.2s ease;
+    align-self: flex-end;
+    letter-spacing: 0.2px;
+}
+
+.inst-ai-send:hover:not(:disabled) {
+    filter: brightness(1.08);
+    border-color: rgba(255,255,255,0.6);
+}
+
+.inst-ai-send:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    background: rgba(255,255,255,0.06);
+    color: rgba(255,255,255,0.3);
+    border-color: rgba(255,255,255,0.07);
+}
+
+.inst-ai-typing {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 10px;
+}
+
+.inst-ai-typing span {
+    width: 5px;
+    height: 5px;
+    background: rgba(255,255,255,0.5);
+    border-radius: 50%;
+    animation: aiTyping 1.2s infinite;
+}
+
+.inst-ai-typing span:nth-child(2) { animation-delay: .2s; }
+.inst-ai-typing span:nth-child(3) { animation-delay: .4s; }
+
+@keyframes aiTyping {
+    0%, 80%, 100% { opacity: 0.2; transform: scale(1); }
+    40% { opacity: 1; transform: scale(1.3); }
+}
+
+/* ─── Card section header ─── */
+.inst-section-hdr {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+}
+
+.inst-section-hdr h2 {
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.85);
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    text-align: left;
+    margin: 0;
+    position: relative;
+    padding-left: 12px;
+}
+
+.inst-section-hdr h2::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 14px;
+    border-radius: 2px;
+    background: linear-gradient(to bottom, rgba(255,255,255,0.7), rgba(255,255,255,0.15));
+}
+
+/* ═══════════════════ GUIDE TAB STYLES ═══════════════════ */
+
+/* Scrollable right-column wrapper */
+.guide-scroll {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    overflow-y: auto;
+    max-height: calc(100vh - 160px);
+    padding-right: 4px;
+}
+
+/* Individual card */
+.guide-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 14px;
+    padding: 18px 20px;
+}
+
+/* Card header row */
+.guide-card-hdr {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.guide-icon {
+    font-size: 18px;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.guide-card-title {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.92);
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+}
+
+/* Section sub-label */
+.guide-section-label {
+    font-size: 11.5px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.65);
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    margin: 12px 0 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Body text */
+.guide-p {
+    font-size: 12.5px;
+    color: rgba(255,255,255,0.62);
+    line-height: 1.65;
+    margin: 0 0 10px;
+}
+
+.guide-muted {
+    color: rgba(255,255,255,0.38) !important;
+    font-size: 11.5px !important;
+}
+
+/* Divider */
+.guide-divider {
+    height: 1px;
+    background: rgba(255,255,255,0.06);
+    margin: 14px 0;
+}
+
+/* Numbered steps */
+.guide-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.guide-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 12.5px;
+    color: rgba(255,255,255,0.7);
+    line-height: 1.55;
+}
+
+.guide-step-num {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.14);
+    font-size: 10px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.8);
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+/* Tip / callout boxes */
+.guide-tip {
+    border-radius: 9px;
+    padding: 11px 14px;
+    font-size: 12px;
+    line-height: 1.6;
+    color: rgba(255,255,255,0.78);
+    margin-bottom: 10px;
+}
+
+.guide-tip-green {
+    background: rgba(76,175,80,0.07);
+    border: 1px solid rgba(76,175,80,0.22);
+}
+
+.guide-tip-yellow {
+    background: rgba(255,193,7,0.06);
+    border: 1px solid rgba(255,193,7,0.2);
+}
+
+.guide-tip-blue {
+    background: rgba(88,166,255,0.06);
+    border: 1px solid rgba(88,166,255,0.18);
+}
+
+/* Note (lighter, smaller) */
+.guide-note {
+    font-size: 11.5px;
+    color: rgba(255,255,255,0.38);
+    background: rgba(255,255,255,0.03);
+    border-left: 2px solid rgba(255,255,255,0.1);
+    padding: 8px 12px;
+    border-radius: 0 6px 6px 0;
+    margin-bottom: 10px;
+    line-height: 1.55;
+}
+
+/* Links */
+.guide-link {
+    color: rgba(140,180,255,0.85);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.guide-link:hover {
+    color: rgba(140,180,255,1);
+    text-decoration: underline;
+}
+
+/* Inline code */
+.guide-code {
+    font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+    font-size: 11px;
+    background: rgba(0,0,0,0.35);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 4px;
+    padding: 1px 6px;
+    color: rgba(255,255,255,0.75);
+    word-break: break-all;
+}
+
+/* Small badge */
+.guide-badge {
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 5px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    flex-shrink: 0;
+}
+
+.guide-badge-green {
+    background: rgba(76,175,80,0.1);
+    color: #6fcf72;
+    border: 1px solid rgba(76,175,80,0.25);
+}
+
+.guide-badge-yellow {
+    background: rgba(255,193,7,0.1);
+    color: #f0c040;
+    border: 1px solid rgba(255,193,7,0.25);
+}
+
+.guide-badge-blue {
+    background: rgba(88,166,255,0.1);
+    color: #7ab8ff;
+    border: 1px solid rgba(88,166,255,0.22);
+}
+
+/* Two-column layout for NopeCHA section */
+.guide-two-col {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+}
+
+.guide-two-col > div:first-child {
+    flex: 1;
+    min-width: 0;
+}
+
+.guide-img-col {
+    flex: 0 0 140px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+.guide-img-thumb {
+    width: 130px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.1);
+    cursor: zoom-in;
+    object-fit: cover;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.guide-img-thumb:hover {
+    transform: scale(1.03);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+}
+
+.guide-img-thumb.guide-img-zoom {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(1);
+    width: auto;
+    max-width: 90vw;
+    max-height: 85vh;
+    z-index: 9999;
+    border-radius: 14px;
+    box-shadow: 0 20px 80px rgba(0,0,0,0.85);
+    cursor: zoom-out;
+}
+
+.guide-img-caption {
+    font-size: 10px;
+    color: rgba(255,255,255,0.3);
+    text-align: center;
+    line-height: 1.4;
+}
+
+/* Provider comparison cards */
+.guide-providers {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.guide-provider-card {
+    background: rgba(0,0,0,0.2);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 9px;
+    padding: 11px 14px;
+}
+
+.guide-provider-dim {
+    opacity: 0.55;
+}
+
+.guide-provider-name {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.85);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.guide-provider-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.55);
+    line-height: 1.55;
+}
